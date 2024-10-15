@@ -11,11 +11,6 @@ graph "ACME" {
 "Leaf04":"swp49" -- "Spine01":"swp4"
 "Leaf04":"swp50" -- "Spine02":"swp4"
 
-# OOB-Spine to OOB-Spine
-
-"Spine01":"swp31" -- "Spine02":"swp31"
-"Spine01":"swp32" -- "Spine02":"swp32"
-
 # Spine to Border-Leaf
 
 "Spine01":"swp29" -- "BorderLeaf01":"swp1"
