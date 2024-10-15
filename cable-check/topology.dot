@@ -1,0 +1,26 @@
+graph "ACME" {
+
+# Leaf to Spine
+
+"Leaf01":"swp49" -- "Spine01":"swp1"
+"Leaf01":"swp50" -- "Spine02":"swp1"
+"Leaf02":"swp49" -- "Spine01":"swp2"
+"Leaf02":"swp50" -- "Spine02":"swp2"
+"Leaf03":"swp49" -- "Spine01":"swp3"
+"Leaf03":"swp50" -- "Spine02":"swp3"
+"Leaf04":"swp49" -- "Spine01":"swp4"
+"Leaf04":"swp50" -- "Spine02":"swp4"
+
+# OOB-Spine to OOB-Spine
+
+"Spine01":"swp31" -- "Spine02":"swp31"
+"Spine01":"swp32" -- "Spine02":"swp32"
+
+# Spine to Border-Leaf
+
+"Spine01":"swp29" -- "BorderLeaf01":"swp1"
+"Spine01":"swp30" -- "BorderLeaf02":"swp1"
+"Spine02":"swp29" -- "BorderLeaf01":"swp2"
+"Spine02":"swp30" -- "BorderLeaf02":"swp2"
+
+}

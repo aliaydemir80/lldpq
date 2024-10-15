@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <link rel="shortcut icon" href="/png/favicon.ico">
+    <title>..::nvidia::..</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="/css/main_styles.css">
+    <style>
+        #sidebar {
+            width: 250px;
+            float: left;
+        }
+        #content-iframe {
+            float: left;
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            height: 100vh;
+            border: none;
+        }
+        .menu-item {
+            cursor: pointer;
+        }
+        .submenu {
+            display: none;
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .submenu a {
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .submenu a:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <ul>
+            <li><center><img src="/png/nvidia.png" style="border: 0;"></center></li>
+            <li><hr></li>
+            	<li><a href="start.html" target="content-iframe" title="Main Page">NVIDIA FABRIC</a></li>
+                <li><a href="asset.html" title="ASSETS" target="content-iframe">ASSETS</a></li>
+            <li><hr></li>
+                <li><a href="lldp.html" title="LLDP Check on EW" target="content-iframe">LLDP Results</a></li>
+            <li><hr></li>
+                <li><a href="lldp-problem.html" title="LLDP Check on EW" target="content-iframe">LLDP Problems</a></li>
+                <li><a href="archive.html" title="LLDP Problems Archive" target="content-iframe">LLDP Problems Archive</a></li>
+            <li><hr></li>
+            <font face="consolas" color="#666666"><h3><center>aaydemir@nvidia.com</center></h3></font>
+        </ul>
+    </div>
+    <iframe id="content-iframe" name="content-iframe" src="start.html"></iframe>
+    <script>
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const submenu = item.nextElementSibling;
+                if (submenu.style.display === 'block') {
+                    submenu.style.display = 'none';
+                } else {
+                    submenu.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

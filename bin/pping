@@ -1,0 +1,138 @@
+#!/bin/bash
+
+# Ali Aydemir
+# v9.9 Updated to support hostname and IP pair input format
+
+count=1       # quantity of send
+timeout=0.1   # timeout in seconds (100 milliseconds)
+max_tries=3   # if not reachable, quantity of tries
+
+starting_time=0
+hosts_up=0
+hosts_down=0
+unreachable_hosts=()
+reachable_hosts=()
+
+load_ip_list() {
+    local file_path=$1
+    if [[ ! -f $file_path ]]; then
+        echo -e "\e[91mError: \e[32m${file_path}\e[91m does not exist.\e[0m"
+        echo -e "\e[91mUse: \e[32mpping -h\e[0m"
+        exit 1
+    fi
+    mapfile -t ip_list < <(awk '{if(NF==2) print $0; else print $1, $1}' "$file_path")
+}
+
+command_maker() {
+    local ip_list=("$@")
+    local vrf=$vrf_name
+    commands=()
+    for entry in "${ip_list[@]}"; do
+        hostname=$(echo $entry | cut -d' ' -f1)
+        ip=$(echo $entry | cut -d' ' -f2)
+        if [[ -n $vrf ]]; then
+            command="timeout $timeout vrf task exec $vrf ping -c$count $ip"
+        else
+            command="timeout $timeout ping -c$count $ip"
+        fi
+        commands+=("$command")
+    done
+}
+
+process_ping() {
+    local hostname=$1
+    local cmd=$2
+    local ip=$3
+    tries=0
+    while [[ $tries -lt $max_tries ]]; do
+        tries=$((tries+1))
+        if eval $cmd > /dev/null 2>&1; then
+            echo -e "\e[93m${hostname} [${ip}] is UP\e[0m"
+            hosts_up=$((hosts_up+1))
+            reachable_hosts+=("$hostname $ip")
+            return
+        else
+            echo -e "\e[96m${hostname} [${ip}] is DOWN !!!\e[0m"
+        fi
+    done
+    hosts_down=$((hosts_down+1))
+    unreachable_hosts+=("$hostname $ip")
+}
+
+full_ping() {
+    echo
+    echo -e "\e[101;93m...::Ping Starting::...\e[0m"
+    starting_time=$(date +%s)
+    hosts_up=0
+    hosts_down=0
+    unreachable_hosts=()
+    reachable_hosts=()
+    command_maker "${ip_list[@]}"
+    for i in "${!commands[@]}"; do
+        cmd=${commands[i]}
+        hostname=$(echo "${ip_list[i]}" | cut -d' ' -f1)
+        ip=$(echo "${ip_list[i]}" | cut -d' ' -f2)
+        echo
+        if [[ -n $vrf_name ]]; then
+            echo -e "\e[32mPinging IP Address:\e[0m \e[1m-->\e[31m ${hostname} [${ip}] [VRF: ${vrf_name}]\e[0m"
+        else
+            echo -e "\e[32mPinging IP Address:\e[0m \e[1m-->\e[31m ${hostname} [${ip}]\e[0m"
+        fi
+        process_ping "$hostname" "$cmd" "$ip"
+    done
+}
+
+last_call() {
+    echo
+    echo -e "\e[101;93m...::Ping Completed::...\e[0m"
+    elapsed_time=$(($(date +%s) - starting_time))
+    echo -e "Time Elapsed: \e[95m${elapsed_time}\e[0m seconds"
+    echo -e "Hosts UP: \e[93m${hosts_up}\e[0m, Hosts DOWN: \e[96m${hosts_down}\e[0m"
+    if [[ ${#unreachable_hosts[@]} -gt 0 ]]; then
+        echo -e "\n\e[96mUnreachable Hosts:\n\e[0m"
+        for host in "${unreachable_hosts[@]}"; do
+            IFS=' ' read -r hostname ip <<< "$host"
+            echo -e "\e[31m[$ip] \e[0;31m[$hostname]\e[0m"
+        done
+        echo ""
+    fi
+    if [[ ${#reachable_hosts[@]} -gt 0 ]]; then
+        echo -e "\n\e[92mReachable Hosts:\n\e[0m"
+        for host in "${reachable_hosts[@]}"; do
+            IFS=' ' read -r hostname ip <<< "$host"
+            echo -e "\e[32m[$ip] \e[0;32m[$hostname]\e[0m"
+        done
+        echo ""
+    fi
+    echo -e "Press \e[32m[P] \e[0mto do it again.\nPress \e[91m[Q] \e[0mto exit."
+    read -rsn1 char
+    if [[ $char == 'p' || $char == 'P' ]]; then
+        main_loop
+    elif [[ $char == 'q' || $char == 'Q' ]]; then
+        exit 0
+    else
+        exit 0
+    fi
+}
+
+main_loop() {
+    while true; do
+        main "$@"
+        last_call
+    done
+}
+
+main() {
+    while getopts ":v:f:" opt; do
+        case $opt in
+            v) vrf_name=$OPTARG ;;
+            f) file_path=$OPTARG ;;
+            \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
+        esac
+    done
+    file_path=${file_path:-/etc/ip_list}
+    load_ip_list "$file_path"
+    full_ping
+}
+
+main_loop "$@"

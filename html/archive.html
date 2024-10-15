@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <link rel="shortcut icon" href="/png/favicon.ico">
+    <title>..::nvidia::..</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="/css/styles2.css">
+    <style>
+        #metinAlani {
+            white-space: pre;
+            font-family: monospace;
+            font-size: 15px;
+        }
+        .steelBlue {
+            color: steelblue;
+        }
+        .tomato {
+            color: tomato;
+        }
+        .red {
+            color: red;
+        }
+        .green {
+            color: green;
+        }
+        .lime {
+            color: lime;
+        }
+        #status {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 15px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1></h1>
+    <h1><font color="#b57614">LLDP Result Archive on the Fabric</font></h1>
+    <h3></h3>
+
+    <select id="fileDropdown" onchange="handleFileSelection()">
+        <option value="">-- Select a file --</option>
+    </select>
+    <br><br>
+    <div id="metinAlani"></div>
+
+    <script>
+        function listFiles() {
+            fetch('/hstr/')
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const htmlDoc = parser.parseFromString(data, 'text/html');
+                    const files = Array.from(htmlDoc.querySelectorAll('a')).map(a => a.href).filter(href => href.includes('Problems'));
+                    const fileDropdown = document.getElementById('fileDropdown');
+
+                    files.forEach(file => {
+                        const fileName = file.split('/').pop();
+                        const option = document.createElement('option');
+                        option.value = fileName;
+                        option.textContent = fileName;
+                        fileDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching file list:', error));
+        }
+
+        function handleFileSelection() {
+            const fileDropdown = document.getElementById('fileDropdown');
+            const selectedFile = fileDropdown.value;
+            if (selectedFile) {
+                fetchFileContent(selectedFile);
+            }
+        }
+
+        function fetchFileContent(fileName) {
+            fetch(`/hstr/${fileName}`)
+                .then(response => response.text())
+                .then(data => {
+                    displayLLDPResults(data);
+                })
+                .catch(error => {
+                    const element = document.getElementById('metinAlani');
+                    element.innerText = 'Error fetching LLDP results: ' + error;
+                });
+        }
+
+        function displayLLDPResults(results) {
+            const element = document.getElementById('metinAlani');
+            element.innerHTML = '';
+            const lines = results.split('\n');
+            lines.forEach(line => {
+                let colorClass = 'lime';
+                if (line.startsWith('====')) {
+                    colorClass = 'steelBlue';
+                } else if (line.toLowerCase().includes('fail')) {
+                    colorClass = 'tomato';
+                } else if (line.toLowerCase().includes('reated')) {
+                    colorClass = 'tomato';
+                } else if (line.toLowerCase().includes('no-info')) {
+                    colorClass = 'red';
+                }
+                const span = document.createElement('span');
+                span.className = colorClass;
+                span.textContent = line;
+                element.appendChild(span);
+                element.appendChild(document.createElement('br'));
+            });
+        }
+
+        window.onload = listFiles;
+    </script>
+</body>
+</html>

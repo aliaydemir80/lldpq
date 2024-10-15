@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd ~/cable-check/
+/bin/bash ./assets.sh >/dev/null 2>&1
+
+cd ~/cable-check/
+/bin/bash ./check-lldp.sh >/dev/null 2>&1
+
+exit 0
