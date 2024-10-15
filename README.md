@@ -66,9 +66,9 @@ zzh
 pping
 
 
-![screenshot](demo/1.png)
-![screenshot](demo/2.png)
-![screenshot](demo/3.png)
-![screenshot](demo/4.png)
-![screenshot](demo/5.png)
+![](demo/1.png)
+![](demo/2.png)
+![](demo/3.png)
+![](demo/4.png)
+![](demo/5.png)
 
