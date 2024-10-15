@@ -18,13 +18,13 @@ sudo systemctl enable --now nginx
 
 
 
-## [02]  move files (cd LLDP-Check/)
+## [02]  copy files (cd lldp-check/)
 
 sudo cp -r etc/* /etc
 
 sudo cp -r html/* /var/www/html/
 
-mv bin/* /usr/local/bin/
+cp bin/* /usr/local/bin/
 
 cp -r cable-check ~/cable-check 
 
