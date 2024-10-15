@@ -2,6 +2,10 @@
 
 # 🚀️ LLDP-Check
 
+## [00] git clone  
+
+git clone https://github.com/aliaydemir80/lldp-check.git
+
 
 
 ## [01]  install and runn "nginx"
