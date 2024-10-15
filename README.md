@@ -14,13 +14,13 @@ sudo systemctl enable --now nginx
 
 ## [02]  move files (cd LLDP-Check/)
 
-sudo mv bin/* /usr/local/bin/
+sudo cp -r etc/* /etc
 
-sudo mv etc/* /etc/
+sudo cp -r html/* /var/www/html/
 
-sudo mv html/* /var/www/html/
+mv bin/* /usr/local/bin/
 
-sudo mv cable-check ~/cable-check 
+cp -r cable-check ~/cable-check 
 
 
 
@@ -30,34 +30,13 @@ sudo nano /etc/ip_list
 
 sudo nano /etc/nccm.yml   (edit the end)
 
-sudo nano ~/cable-check/devices.sh
+nano ~/cable-check/devices.sh
 
-sudo nano ~/cable-check/topology.dot
-
-
-
-## [04]  edit nginx config
-
-Add the "/hstr" folder
-
-sudo nano /etc/nginx/sites-enabled/default
+nano ~/cable-check/topology.dot
 
 
-        server_name _;
 
-
-        location / {
-                try_files $uri $uri/ =404;
-        }
-
-#insert the following exactly in place of the above
-
-        location /hstr/ {
-            autoindex on;
-            autoindex_exact_size off;
-            autoindex_localtime on;
-        }
-
+## [04]  restart nginx service
 
 sudo systemctl restart nginx
 

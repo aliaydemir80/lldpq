@@ -56,4 +56,24 @@ grep -v Pass lldp-results/lldp_results.ini > lldp-results/problems-lldp_results.
 sudo cp lldp-results/lldp_results.ini /var/www/html/
 sudo mv /var/www/html/problems-lldp_results.ini /var/www/html/hstr/Problems-${DATE}.ini
 sudo cp lldp-results/problems-lldp_results.ini /var/www/html/
+folder_path="/var/www/html/hstr"
+cd "$folder_path" || exit 1
+declare -a keep_files
+for i in {1..30}; do
+    start_date=$(date -d "$i days ago" '+%Y-%m-%d 00:00:00')
+    end_date=$(date -d "$((i - 1)) days ago" '+%Y-%m-%d 00:00:00')
+    file=$(find . -type f -name "*.ini" -newermt "$start_date" ! -newermt "$end_date" | sort | head -n 1)
+    if [ -n "$file" ]; then
+        keep_files+=("$file")
+    fi
+done
+recent_files=$(find . -type f -name "*.ini" -mtime -1)
+for file in $recent_files; do
+    keep_files+=("$file")
+done
+find . -type f -name "*.ini" | while read file; do
+    if [[ ! " ${keep_files[@]} " =~ " ${file} " ]]; then
+        sudo rm "$file"
+    fi
+done
 exit 0
