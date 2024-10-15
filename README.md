@@ -57,7 +57,7 @@ echo "0 * * * * cumulus /usr/local/bin/lldp-check" | sudo tee -a /etc/crontab
  
 # run the LLDP-Check 🚀️
 
-Before running 'cable-check', 'ssh-copy-id' must be done on all devices.
+Before running lldp-check', 'ssh-copy-id' must be done on all devices.
 
 lldp-check
 
