@@ -37,8 +37,6 @@ def parse_lldp_results(directory, device_info):
             layer_sort_preference = 5
         elif "spine" in device_name.lower():
             layer_sort_preference = 6
-        elif "oob" in device_name.lower():
-            layer_sort_preference = 8
         elif "leaf" in device_name.lower():
             layer_sort_preference = 7
         else:
@@ -73,6 +71,9 @@ def parse_lldp_results(directory, device_info):
 
         for interface in interfaces:
             interface_name, neighbor_device, mgmt_ip, port_descr = interface
+            if interface_name.lower() == "eth0" or port_descr.lower() == "eth0":
+                continue
+
 
             link = {
                 "id": link_id,
