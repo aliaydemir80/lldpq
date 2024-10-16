@@ -38,6 +38,7 @@ sudo nano /etc/ip_list
 ```
 sudo nano /etc/nccm.yml   (edit the end)
 ```
+[edit the end of the nccm.yml file]
 ```
 nano ~/cable-check/devices.sh
 ```
