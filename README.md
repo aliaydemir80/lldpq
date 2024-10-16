@@ -62,7 +62,7 @@ echo "0 * * * * cumulus /usr/local/bin/lldpq" | sudo tee -a /etc/crontab
  
 # run the LLDPq 🚀️
 
-Before running lldp-check', 'ssh-copy-id' must be done on all devices.
+Before running ```lldpq``` or ```zzh```, ```ssh-copy-id``` must be done on all devices.
 ```
 lldpq
 ```
