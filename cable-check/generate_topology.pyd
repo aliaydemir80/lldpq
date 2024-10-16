@@ -74,7 +74,6 @@ def parse_lldp_results(directory, device_info):
             if interface_name.lower() == "eth0" or port_descr.lower() == "eth0":
                 continue
 
-
             link = {
                 "id": link_id,
                 "source": device_nodes[device_name],
@@ -107,7 +106,7 @@ def generate_topology_file(output_filename, directory, assets_file_path):
 
         unique_connections.add((src_device, tgt_device))
 
-    unique_nodes = set()
+    unique_nodes = set(device_info.keys())  # Include all devices from the assets file
 
     for link in topology_data["links"]:
         unique_nodes.add(link["srcDevice"])
