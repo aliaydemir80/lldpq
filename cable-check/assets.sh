@@ -4,10 +4,10 @@ DATE=$(date '+%Y-%m-%d--%H-%M')
 
 source ./devices.sh
 
-commands='echo $HOSTNAME $(/usr/sbin/ifconfig eth0 | grep netmask | cut -d " " -f 10) $(/usr/sbin/ifconfig eth0 | grep ether | cut -d " " -f 10) $(nv sh platform | grep serial-number | cut -d " " -f 3) $(cat /etc/lsb-release  | grep RELEASE | cut -d "=" -f2) '
+commands='echo $HOSTNAME $(/usr/sbin/ifconfig eth0 | grep netmask | cut -d " " -f 10) $(/usr/sbin/ifconfig eth0 | grep ether | cut -d " " -f 10) $(nv sh platform | grep serial-number | cut -d " " -f 3) $(nv sh platform | grep product-name | cut -d " " -f 4) $(cat /etc/lsb-release  | grep RELEASE | cut -d "=" -f2) '
 
 #echo "========================================================================================" > ~/cable-check/assets.txt
-echo "DEVICE-NAME ETH0-IP ETH0-MAC SERIAL VERSION" > ~/cable-check/assets.txt
+echo "DEVICE-NAME ETH0-IP ETH0-MAC SERIAL MODEL VERSION" > ~/cable-check/assets.txt
 #echo "========================================================================================" >> ~/cable-check/assets.txt
 
 unreachable_hosts=()

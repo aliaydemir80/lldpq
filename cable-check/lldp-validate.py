@@ -94,6 +94,7 @@ if __name__ == "__main__":
     results = check_connections(topology_file, device_neighbors)
     output_file_path = os.path.join(lldp_results_folder, "lldp_results.ini")
     date_str = subprocess.getoutput("date '+%Y-%m-%d %H-%M'")
+    generate_topology_script = os.path.join(os.path.dirname(__file__), "generate_topology.py")
     with open(output_file_path, 'w') as output_file:
         output_file.write(f"Created on {date_str}\n\n")
         for filename in files_in_order:
@@ -114,6 +115,7 @@ if __name__ == "__main__":
                     for res in results[device]:
                         output_file.write(f"{res['Port']:<10} {res['Status']:<10} {res['Exp-Nbr']:<28} {res['Exp-Nbr-Port']:<16} {res['Act-Nbr']:<28} {res['Act-Nbr-Port']}\n")
                     output_file.write("\n\n")
+    subprocess.run(["sudo", "python3", generate_topology_script], check=True)
     for filename in files_in_order:
         if filename.endswith("_lldp_result.ini"):
             os.remove(os.path.join(lldp_results_folder, filename))
