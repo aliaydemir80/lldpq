@@ -9,3 +9,13 @@ fill: #8d092a;
 font-size: 11px;
 fill: #8d092a;
 }
+.missing-link {
+    stroke: #FF0000 !important;  /* Force the color */
+    stroke-width: 2px;
+    stroke-dasharray: 4;
+}
+.fail-link {
+    stroke: #FFED29 !important;  /* Force the color */
+    stroke-width: 2px;
+    stroke-dasharray: 4;
+}

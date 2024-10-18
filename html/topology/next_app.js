@@ -9,7 +9,7 @@
         height: 940,
         //width: 3840,
         //height: 2160,
-        // Dataprocessor is responsible for spreading 
+        // Dataprocessor is responsible for spreading
         // the Nodes across the view.
         // 'force' dataprocessor spreads the Nodes so
         // they would be as distant from each other
@@ -41,7 +41,7 @@
         },
         // Link settings
         linkConfig: {
-            // Display Links as curves in case of 
+            // Display Links as curves in case of
             //multiple links between Node Pairs.
             // Set to 'parallel' to use parallel links.
             linkType: 'curve',
@@ -59,11 +59,17 @@
                 if (model._data.is_new === 'yes') {
                     return '#148D09'
                 }
+                if (model._data.is_missing === 'yes') {
+                    return '#FF0000';
+                }
+                if (model._data.is_missing === 'fail') {
+                    return '#FFED29';
+                }
             },
         },
         // Display Node icon. Displays a dot if set to 'false'.
         showIcon: true,
-        linkInstanceClass: 'CustomLinkClass' 
+        linkInstanceClass: 'CustomLinkClass'
     });
 
     topo.registerIcon("dead_node", "img/dead_node.png", 49, 49);
@@ -187,10 +193,23 @@
                     content: [
                         {
                         tag: 'label',
-                        content: 'Source Node ID: ',
+                        content: 'Source: ',
                     }, {
                         tag: 'label',
-                        content: '{#link.model.source.id}',
+                        content: [
+                            {
+                                tag: 'span',
+                                content: '{#link.model.source.name}'
+                            },
+                            {
+                                tag: 'span',
+                                content: ' '
+                            },
+                            {
+                                tag: 'span',
+                                content: '{#link.model.srcIfName}'
+                            }
+                        ]
                     }
                     ],
                     props: {
@@ -201,10 +220,23 @@
                     content: [
                         {
                         tag: 'label',
-                        content: 'Target Node ID: ',
+                        content: 'Target: ',
                     }, {
                         tag: 'label',
-                        content: '{#link.model.target.id}',
+                        content: [
+                            {
+                                tag: 'span',
+                                content: '{#link.model.target.name}'
+                            },
+                            {
+                                tag: 'span',
+                                content: ' '
+                            },
+                            {
+                                tag: 'span',
+                                content: '{#link.model.tgtIfName}'
+                            }
+                        ]
                     }
                     ],
                     props: {
@@ -257,24 +289,24 @@
                     'text-anchor': 'end'
                 }
             });
-            
+
             return view;
         },
         methods: {
             update: function() {
-                
+
                 this.inherited();
-                
-                
+
+
                 var el, point;
-                
+
                 var line = this.line();
                 var angle = line.angle();
                 var stageScale = this.stageScale();
-                
+
                 // pad line
                 line = line.pad(18 * stageScale, 18 * stageScale);
-                
+
                 if (this.sourcelabel()) {
                     el = this.view('source');
                     point = line.start;
@@ -284,8 +316,8 @@
                     el.set('transform', 'rotate(' + angle + ' ' + point.x + ',' + point.y + ')');
                     el.setStyle('font-size', 12 * stageScale);
                 }
-                
-                
+
+
                 if (this.targetlabel()) {
                     el = this.view('target');
                     point = line.end;
