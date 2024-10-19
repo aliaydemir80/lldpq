@@ -190,7 +190,7 @@ def generate_topology_file(output_filename, directory, assets_file_path, dot_fil
         file.write(";")
 
 lldp_results_directory = "lldp-results"
-assets_file_path = "assets"
+assets_file_path = "assets.ini"
 dot_file_path = "topology.dot"
 output_file = "/var/www/html/topology/topology.js"
 generate_topology_file(output_file, lldp_results_directory, assets_file_path, dot_file_path)
