@@ -117,7 +117,7 @@ def find_missing_links_in_topology(lldp_links, defined_links):
         reverse_link = (tgt_device, tgt_ifname, src_device, src_ifname)
 
         if forward_link not in defined_links and reverse_link not in defined_links and reverse_link not in seen_links:
-            link["is_missing"] = "fail"  # "fail" olarak ayarla
+            link["is_missing"] = "fail"
             missing_links.append(link)
             seen_links.add(forward_link)
 
@@ -145,8 +145,6 @@ def generate_topology_file(output_filename, directory, assets_file_path, dot_fil
         unique_connections.add((src_device, src_ifname, tgt_device, tgt_ifname))
 
     unique_nodes = set(device_info.keys())
-
-    # LLDP'de olup topology.dot'da olmayan bağlantıları bul ve is_missing değerini "fail" yap
     missing_links = find_missing_links_in_topology(topology_data["links"], defined_links)
 
     for defined_link in defined_links:
