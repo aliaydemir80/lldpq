@@ -5,7 +5,7 @@
     // Initialize topology
     var topo = new nx.graphic.Topology({
         // View dimensions
-        width: 1640,
+        width: 1639,
         height: 940,
         //width: 3840,
         //height: 2160,
