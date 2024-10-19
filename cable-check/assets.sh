@@ -6,9 +6,7 @@ source ./devices.sh
 
 commands='echo $HOSTNAME $(/usr/sbin/ifconfig eth0 | grep netmask | cut -d " " -f 10) $(/usr/sbin/ifconfig eth0 | grep ether | cut -d " " -f 10) $(nv sh platform | grep serial-number | cut -d " " -f 3) $(nv sh platform | grep product-name | cut -d " " -f 4) $(cat /etc/lsb-release  | grep RELEASE | cut -d "=" -f2) '
 
-#echo "========================================================================================" > ~/cable-check/assets.txt
 echo "DEVICE-NAME ETH0-IP ETH0-MAC SERIAL MODEL VERSION" > ~/cable-check/assets.txt
-#echo "========================================================================================" >> ~/cable-check/assets.txt
 
 unreachable_hosts=()
 
@@ -17,6 +15,7 @@ ping_test() {
     ping -c 1 -W 1 "$device" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         unreachable_hosts+=("$device $hostname")
+        echo "$hostname No-Info No-Info No-Info No-Info No-Info" >> ~/cable-check/assets.txt
         return 1
     fi
     return 0
@@ -42,26 +41,10 @@ done
 
 wait
 
-echo ""
-echo -e "\e[1;34mAll commands have been executed...\e[0m"
-echo ""
-if [ ${#unreachable_hosts[@]} -ne 0 ]; then
-    echo -e "\e[0;36mUnreachable hosts:\e[0m"
-    echo ""
-    for host in "${unreachable_hosts[@]}"; do
-        IFS=' ' read -r ip hostname <<< "$host"
-        printf "\e[31m[%-14s]\t\e[0;31m[%-1s]\e[0m\n" "$ip" "$hostname"
-        #echo -e "\e[0;31m[ $ip ]\t\e[1;31m[ $hostname ]\e[0m"
-    done
-    echo ""
-else
-    echo -e "\e[0;32mAll hosts are reachable.\e[0m"
-    echo ""
-fi
 column -t ~/cable-check/assets.txt > ~/cable-check/asset
 rm -rf ~/cable-check/assets.txt
-sort -t'.' -k1,1n -k2,2n -k3,3n -k4,4n ~/cable-check/asset > ~/cable-check/assets
+sort -t'.' -k1,1n -k2,2n -k3,3n -k4,4n ~/cable-check/asset > ~/cable-check/assets.ini
 rm -rf ~/cable-check/asset
-echo -e "\nCreated on $DATE" >> ~/cable-check/assets
-sudo cp ~/cable-check/assets /var/www/html/
+echo -e "\nCreated on $DATE" >> ~/cable-check/assets.ini
+sudo cp ~/cable-check/assets.ini /var/www/html/
 exit 0
