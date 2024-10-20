@@ -31,13 +31,13 @@ def parse_lldp_results(directory, device_info):
 
     for device_name, info in device_info.items():
         if "border" in device_name.lower():
-            layer_sort_preference = 4
+            layer_sort_preference = 1
         elif "superspine" in device_name.lower():
-            layer_sort_preference = 5
+            layer_sort_preference = 2
         elif "spine" in device_name.lower():
-            layer_sort_preference = 6
+            layer_sort_preference = 3
         elif "leaf" in device_name.lower():
-            layer_sort_preference = 7
+            layer_sort_preference = 4
         else:
             layer_sort_preference = 9
 
@@ -54,6 +54,8 @@ def parse_lldp_results(directory, device_info):
         device_nodes[device_name] = device_id
         device_id += 1
 
+    reachable_devices = set()
+
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
 
@@ -61,6 +63,7 @@ def parse_lldp_results(directory, device_info):
             continue
 
         device_name = filename.split("_lldp_result.ini")[0]
+        reachable_devices.add(device_name)
 
         with open(filepath, 'r') as file:
             data = file.read()
@@ -89,6 +92,10 @@ def parse_lldp_results(directory, device_info):
             }
             topology_data["links"].append(link)
             link_id += 1
+
+    for node in topology_data["nodes"]:
+        if node["name"] not in reachable_devices:
+            node["icon"] = "unknown"
 
     return topology_data, device_nodes, link_id
 
@@ -168,8 +175,9 @@ def generate_topology_file(output_filename, directory, assets_file_path, dot_fil
         unique_nodes.add(link["srcDevice"])
         unique_nodes.add(link["tgtDevice"])
 
-    topology_data["nodes"] = [node for node in topology_data["nodes"] if node["name"] in unique_nodes]
     topology_data["links"] = [link for link in topology_data["links"] if (link["tgtDevice"], link["tgtIfName"], link["srcDevice"], link["srcIfName"]) not in duplicate_connections]
+
+    topology_data["nodes"] = [node for node in topology_data["nodes"] if node["name"] in unique_nodes]
 
     topology_data["nodes"] = sorted(topology_data["nodes"], key=lambda x: x["name"])
     id_map = {node["id"]: new_id for new_id, node in enumerate(topology_data["nodes"])}
