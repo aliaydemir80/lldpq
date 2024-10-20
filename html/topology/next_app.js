@@ -72,8 +72,6 @@
         linkInstanceClass: 'CustomLinkClass'
     });
 
-    topo.registerIcon("dead_node", "img/dead_node.png", 49, 49);
-
     var Shell = nx.define(nx.ui.Application, {
         methods: {
             start: function () {
