@@ -48,7 +48,8 @@ def parse_lldp_results(directory, device_info):
             "name": device_name,
             "primaryIP": info["primaryIP"],
             "model": info["model"],
-            "serial_number": info["serial_number"]
+            "serial_number": info["serial_number"],
+            "version": info["version"]
         }
         topology_data["nodes"].append(device_node)
         device_nodes[device_name] = device_id

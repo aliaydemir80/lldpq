@@ -139,6 +139,18 @@
                         content: '{#node.model.serial_number}',
                     }],
                     props: {
+                        "style": "font-size:80%;"
+                    }
+                }, {
+                    tag: 'p',
+                    content: [{
+                        tag: 'label',
+                        content: 'Version: ',
+                    }, {
+                        tag: 'label',
+                        content: '{#node.model.version}',
+                    }],
+                    props: {
                         "style": "font-size:80%; padding:0"
                     }
                 },
