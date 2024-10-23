@@ -69,30 +69,34 @@ def parse_lldp_results(directory, device_info):
         with open(filepath, 'r') as file:
             data = file.read()
 
-        interface_pattern = r'Interface:\s+(\S+),.*?SysName:\s+(\S+).*?(?:MgmtIP:\s+([\d.]+))?.*?PortID:\s+ifname\s+(\S+)'
-        interfaces = re.findall(interface_pattern, data, re.DOTALL)
-
-        for interface in interfaces:
-            interface_name, neighbor_device, mgmt_ip, port_descr = interface
-
-            if interface_name.lower() == "eth0" or port_descr.lower() == "eth0":
+        interface_sections = re.split(r'Interface:\s+', data)
+        for section in interface_sections[1:]:
+            if "SysName" not in section and "PortID" in section:
                 continue
+            interface_pattern = r'(\S+),.*?SysName:\s+(\S+).*?(?:MgmtIP:\s+([\d.]+))?.*?PortID:\s+ifname\s+(\S+)'
+            interfaces = re.findall(interface_pattern, section, re.DOTALL)
 
-            if neighbor_device not in device_nodes:
-                continue
+            for interface in interfaces:
+                interface_name, neighbor_device, mgmt_ip, port_descr = interface
 
-            link = {
-                "id": link_id,
-                "source": device_nodes[device_name],
-                "srcDevice": device_name,
-                "srcIfName": interface_name,
-                "target": device_nodes.get(neighbor_device),
-                "tgtDevice": neighbor_device,
-                "tgtIfName": port_descr,
-                "is_missing": "no"
-            }
-            topology_data["links"].append(link)
-            link_id += 1
+                if interface_name.lower() == "eth0" or port_descr.lower() == "eth0":
+                    continue
+
+                if neighbor_device not in device_nodes:
+                    continue
+
+                link = {
+                    "id": link_id,
+                    "source": device_nodes[device_name],
+                    "srcDevice": device_name,
+                    "srcIfName": interface_name,
+                    "target": device_nodes.get(neighbor_device),
+                    "tgtDevice": neighbor_device,
+                    "tgtIfName": port_descr,
+                    "is_missing": "no"
+                }
+                topology_data["links"].append(link)
+                link_id += 1
 
     for node in topology_data["nodes"]:
         if node["name"] not in reachable_devices:
