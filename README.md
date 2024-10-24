@@ -67,6 +67,8 @@ Before running ```lldpq``` or ```zzh```, ```ssh-copy-id``` must be done on all d
 lldpq
 ```
 ```
+get-conf
+```
 zzh
 ```
 ```
