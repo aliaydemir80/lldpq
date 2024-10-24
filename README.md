@@ -55,7 +55,7 @@ sudo systemctl restart nginx
 
 ## [05]  add cron job
 ```
-echo "0 * * * * cumulus /usr/local/bin/lldpq" | sudo tee -a /etc/crontab
+echo "0 * * * * $(whoami) /usr/local/bin/lldpq" | sudo tee -a /etc/crontab
 ```
 
 
