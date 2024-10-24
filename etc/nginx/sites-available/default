@@ -49,6 +49,9 @@ server {
                 # First attempt to serve request as file, then
                 # as directory, then fall back to displaying a 404.
                 try_files $uri $uri/ =404;
+                add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";
+                add_header Pragma "no-cache";
+                add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT";
         }
 
         location /hstr/ {
@@ -56,6 +59,7 @@ server {
         autoindex_exact_size off;
         autoindex_localtime on;
         }
+
         # pass PHP scripts to FastCGI server
         #
         #location ~ \.php$ {
