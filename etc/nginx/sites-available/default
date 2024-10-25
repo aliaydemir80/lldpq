@@ -40,28 +40,25 @@ server {
 
         root /var/www/html;
 
-        # Add index.php to the list if you are using PHP
-        index index.html index.htm index.nginx-debian.html;
+        index index.html index.htm;
 
         server_name _;
 
         location / {
-                # First attempt to serve request as file, then
-                # as directory, then fall back to displaying a 404.
-                try_files $uri $uri/ =404;
-                add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";
-                add_header Pragma "no-cache";
-                add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT";
+            try_files $uri $uri/ =404;
+            add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";
+            add_header Pragma "no-cache";
+            add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT";
         }
         location /configs/ {
-        autoindex on;
-        autoindex_exact_size off;
-        autoindex_localtime on;
+            autoindex on;
+            autoindex_exact_size off;
+            autoindex_localtime on;
         }
         location /hstr/ {
-        autoindex on;
-        autoindex_exact_size off;
-        autoindex_localtime on;
+            autoindex on;
+            autoindex_exact_size off;
+            autoindex_localtime on;
         }
 
         # pass PHP scripts to FastCGI server
@@ -82,24 +79,3 @@ server {
         #       deny all;
         #}
 }
-
-
-# Virtual Host configuration for example.com
-#
-# You can move that to a different file under sites-available/ and symlink that
-# to sites-enabled/ to enable it.
-#
-#server {
-#       listen 80;
-#       listen [::]:80;
-#
-#       server_name example.com;
-#
-#       root /var/www/example.com;
-#       index index.html;
-#
-#       location / {
-#               try_files $uri $uri/ =404;
-#       }
-#}
-
