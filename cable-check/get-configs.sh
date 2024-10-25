@@ -64,5 +64,6 @@ else
 fi
 sudo rm -rf /var/www/html/configs/*
 sudo cp ~/configs/configs-${date}/nv-set/* /var/www/html/configs/
+sudo cp ~/configs/configs-${date}/nv-yaml/* /var/www/html/configs/
 exit 0
 

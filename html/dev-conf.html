@@ -34,13 +34,18 @@
     </style>
 </head>
 <body>
-    <h1></h1>
     <h1><font color="#b57614">Device Configs on the Fabric</font></h1>
-    <h3></h3>
-
-    <select id="fileDropdown" onchange="handleFileSelection()">
-        <option value="">-- Select a file --</option>
+    
+    <label for="txtFileDropdown"> </label>
+    <select id="txtFileDropdown" onchange="handleFileSelection('txt')">
+        <option value="">-- Select a TXT file --</option>
     </select>
+
+    <label for="yamlFileDropdown"> </label>
+    <select id="yamlFileDropdown" onchange="handleFileSelection('yaml')">
+        <option value="">-- Select a YAML file --</option>
+    </select>
+
     <br><br>
     <div id="metinAlani"></div>
 
@@ -51,22 +56,29 @@
                 .then(data => {
                     const parser = new DOMParser();
                     const htmlDoc = parser.parseFromString(data, 'text/html');
-                    const files = Array.from(htmlDoc.querySelectorAll('a')).map(a => a.href).filter(href => href.endsWith('txt'));
-                    const fileDropdown = document.getElementById('fileDropdown');
+                    const files = Array.from(htmlDoc.querySelectorAll('a')).map(a => a.href);
+                    
+                    const txtFileDropdown = document.getElementById('txtFileDropdown');
+                    const yamlFileDropdown = document.getElementById('yamlFileDropdown');
 
                     files.forEach(file => {
                         const fileName = file.split('/').pop();
                         const option = document.createElement('option');
                         option.value = fileName;
                         option.textContent = fileName;
-                        fileDropdown.appendChild(option);
+                        
+                        if (file.endsWith('.txt')) {
+                            txtFileDropdown.appendChild(option);
+                        } else if (file.endsWith('.yaml')) {
+                            yamlFileDropdown.appendChild(option);
+                        }
                     });
                 })
                 .catch(error => console.error('Error fetching file list:', error));
         }
 
-        function handleFileSelection() {
-            const fileDropdown = document.getElementById('fileDropdown');
+        function handleFileSelection(type) {
+            const fileDropdown = document.getElementById(type === 'txt' ? 'txtFileDropdown' : 'yamlFileDropdown');
             const selectedFile = fileDropdown.value;
             if (selectedFile) {
                 fetchFileContent(selectedFile);
