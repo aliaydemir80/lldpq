@@ -16495,6 +16495,27 @@ var nx = {
                           },
                         ],
                       },
+
+                      {
+                        name: "displayInterfaceSetting",
+                        tag: "h5",
+                        content: [
+                          { tag: "span", content: "Display Interface : " },
+                          {
+                            tag: "input",
+                            props: {
+                              class: "toggleInterfaceCheckBox",
+                              type: "checkbox",
+                              checked: !0,
+                            },
+                            events: {
+                              click: "{#_toggleInterfaceVisibility}",
+                              touchend: "{#_toggleInterfaceVisibility}",
+                            },
+                          },
+                        ],
+                      },
+
                       { tag: "h5", content: "Theme :" },
                       {
                         props: { class: "btn-group" },
@@ -16722,6 +16743,11 @@ var nx = {
           }),
             (a.graphic.Topology.NodesLayer.defaultConfig.labelVisibility = c),
             (a.graphic.Topology.NodeSetLayer.defaultConfig.labelVisibility = c);
+        },
+        _toggleInterfaceVisibility: function () {
+          document.querySelectorAll('.sourcelabel, .targetlabel').forEach(function(el) {
+            el.classList.toggle('hidden-interface-label');
+          });
         },
         _agr: function () {
           var a = this.topology(),

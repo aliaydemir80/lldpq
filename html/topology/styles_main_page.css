@@ -1,21 +1,29 @@
-body,html{
+body, html {
     height: 100%;
 }
+
 .sourcelabel {
-font-size: 11px;
-fill: #7b7b7b;
+    font-size: 11px;
+    fill: #7b7b7b;
 }
+
 .targetlabel {
-font-size: 11px;
-fill: #7b7b7b;
+    font-size: 11px;
+    fill: #7b7b7b;
 }
+
+.hidden-interface-label {
+    display: none !important;
+}
+
 .missing-link {
-    stroke: #FF0000 !important;  /* Force the color */
+    stroke: #FF0000 !important;
     stroke-width: 2px;
     stroke-dasharray: 4;
 }
+
 .fail-link {
-    stroke: #FFED29 !important;  /* Force the color */
+    stroke: #FFED29 !important;
     stroke-width: 2px;
     stroke-dasharray: 4;
 }
