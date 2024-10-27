@@ -3776,6 +3776,10 @@ Nothing in this Public License constitutes or may be interpreted as a limitation
   float: right;
   margin-right: 12px;
 }
+.n-topology-setting-panel .popover-content .toggleInterfaceCheckBox {
+  float: right;
+  margin-right: 12px;
+}
 .n-topology-thumbnail {
   position: absolute;
   border: solid 1px #ccc;
