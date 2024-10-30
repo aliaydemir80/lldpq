@@ -52,7 +52,8 @@ else
 fi
 
 /usr/bin/python3 ./lldp-validate.py
-grep -v Pass lldp-results/lldp_results.ini > lldp-results/problems-lldp_results.ini
+grep -v Pass lldp-results/lldp_results.ini > lldp-results/raw-problems-lldp_results.ini
+(head -n 1 lldp-results/raw-problems-lldp_results.ini && awk 'NF' RS='\n\n' lldp-results/raw-problems-lldp_results.ini | awk '/No-Info/ || /Fail/' RS= | sed '/^================================/i\\') > lldp-results/problems-lldp_results.ini
 sudo cp lldp-results/lldp_results.ini /var/www/html/
 sudo mv /var/www/html/problems-lldp_results.ini /var/www/html/hstr/Problems-${DATE}.ini
 sudo cp lldp-results/problems-lldp_results.ini /var/www/html/
