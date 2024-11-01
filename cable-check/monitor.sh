@@ -14,6 +14,7 @@ execute_commands() {
     <title>..::nvidia::..</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="/css/styles2.css">
+    <style>.interface-info {color: green;margin-top: 20px;}</style>
 </head>
 <body>
     <h1></h1>
@@ -22,6 +23,13 @@ execute_commands() {
 EOF
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "bwm-ng -o html" >> monitor-results/${hostname}.html
     sed -i 's/"bwm-ng-header">bwm-ng bwm-ng v0.6.3 (refresh 5s); input: \/proc\/net\/dev/ /g' monitor-results/${hostname}.html
+    echo "" >> monitor-results/${hostname}.html
+
+    echo "<h3 class='interface-info'>" >> monitor-results/${hostname}.html
+    echo "<pre>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show interface" >> monitor-results/${hostname}.html
+    echo "</h3>" >> monitor-results/${hostname}.html
+    echo "</pre>" >> monitor-results/${hostname}.html
     echo "</body></html>" >> monitor-results/${hostname}.html
 }
 
@@ -33,4 +41,3 @@ done
 wait
 sudo cp -r monitor-results/ /var/www/html/
 exit 0
-
