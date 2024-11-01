@@ -38,42 +38,55 @@
     <h1><font color="#b57614">Asset Result on the Fabric</font></h1>
     <h3></h3>
     <div id="metinAlani-1"></div>
-    <script>
-        function fetchAndDisplayAssetResults() {
-            fetch('assets.ini')
-                .then(response => response.text())
-                .then(data => displayAssetResults(data))
-                .catch(error => {
-                    const element = document.getElementById('metinAlani-1');
-                    element.innerText = 'Error fetching Asset results: ' + error;
-                });
-        }
-
-        function displayAssetResults(results) {
-            const element = document.getElementById('metinAlani-1');
-            element.innerHTML = '';
-            const lines = results.split('\n');
-            lines.forEach(line => {
-                let colorClass = 'green';
-                if (line.startsWith('DEVICE')) {
-                    colorClass = 'steelBlue';
-                } else if (line.toLowerCase().includes('fail')) {
-                    colorClass = 'tomato';
-                } else if (line.toLowerCase().includes('reated')) {
-                    colorClass = 'tomato';
-                } else if (line.toLowerCase().includes('no-info')) {
-                    colorClass = 'red';
-                }
-                const span = document.createElement('span');
-                span.className = colorClass;
-                span.textContent = line;
-                element.appendChild(span);
-                element.appendChild(document.createElement('br'));
+<script>
+    function fetchAndDisplayAssetResults() {
+        fetch('assets.ini')
+            .then(response => response.text())
+            .then(data => displayAssetResults(data))
+            .catch(error => {
+                const element = document.getElementById('metinAlani-1');
+                element.innerText = 'Error fetching Asset results: ' + error;
             });
-        }
+    }
 
-        window.onload = fetchAndDisplayAssetResults;
-    </script>
+    function displayAssetResults(results) {
+        const element = document.getElementById('metinAlani-1');
+        element.innerHTML = '';
+        const lines = results.split('\n');
+        lines.forEach(line => {
+            let colorClass = 'green';
+            if (line.startsWith('DEVICE')) {
+                colorClass = 'steelBlue';
+            } else if (line.toLowerCase().includes('fail')) {
+                colorClass = 'tomato';
+            } else if (line.toLowerCase().includes('reated')) {
+                colorClass = 'tomato';
+            } else if (line.toLowerCase().includes('no-info')) {
+                colorClass = 'red';
+            }
+
+            const span = document.createElement('span');
+            span.className = colorClass;
+
+            if (line.match(/[\w-]+/) && !line.startsWith('DEVICE') && !line.toLowerCase().includes('created')) {
+                const deviceName = line.split(/\s+/)[0];
+                const link = document.createElement('a');
+                link.href = `monitor-results/${deviceName}.html`;
+                link.textContent = deviceName;
+                link.className = colorClass;
+
+                span.appendChild(link);
+                span.appendChild(document.createTextNode(line.substring(deviceName.length)));
+            } else {
+                span.textContent = line;
+            }
+
+            element.appendChild(span);
+            element.appendChild(document.createElement('br'));
+        });
+    }
+
+    window.onload = fetchAndDisplayAssetResults;
+</script>
 </body>
 </html>
-
