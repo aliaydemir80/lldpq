@@ -43,9 +43,10 @@ tmux split-window -h -p 50
 # select pane 2 on LOG
 tmux select-pane -t 3
 tmux send-keys "cd" C-m
+tmux send-keys "clear" C-m
 tmux send-keys "sudo su" C-m
 tmux send-keys "cd /var/log" C-m
-tmux send-keys "ll" C-m
+tmux send-keys "ls" C-m
 
 # return to main vim window CMD
 tmux select-window -t $session:1
