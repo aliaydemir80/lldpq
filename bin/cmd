@@ -46,6 +46,7 @@ tmux send-keys "cd" C-m
 tmux send-keys "clear" C-m
 tmux send-keys "sudo su" C-m
 tmux send-keys "cd /var/log" C-m
+tmux send-keys "for run in {1..99}; do echo ""; done" C-m
 tmux send-keys "ls" C-m
 
 # return to main vim window CMD
