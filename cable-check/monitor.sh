@@ -21,9 +21,9 @@ execute_commands() {
     <h1><font color="#b57614">Port Monitoring ${hostname}</font></h1>
     <h3></h3>
 EOF
-    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "bwm-ng -o html" >> monitor-results/${hostname}.html
-    sed -i 's/"bwm-ng-header">bwm-ng bwm-ng v0.6.3 (refresh 5s); input: \/proc\/net\/dev/ /g' monitor-results/${hostname}.html
-    echo "" >> monitor-results/${hostname}.html
+#    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "bwm-ng -o html" >> monitor-results/${hostname}.html
+#    sed -i 's/"bwm-ng-header">bwm-ng bwm-ng v0.6.3 (refresh 5s); input: \/proc\/net\/dev/ /g' monitor-results/${hostname}.html
+#    echo "" >> monitor-results/${hostname}.html
 
     echo "<h3 class='interface-info'>" >> monitor-results/${hostname}.html
     echo "<pre>" >> monitor-results/${hostname}.html
