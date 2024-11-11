@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source ./devices.sh
-
+SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
+source "$SCRIPT_DIR/devices.sh"
 unreachable_hosts=()
 date=$(date +%F--%H-%M)
 mkdir -p ~/configs/configs-${date}/nv-yaml

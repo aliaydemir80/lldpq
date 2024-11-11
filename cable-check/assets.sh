@@ -2,8 +2,8 @@
 
 DATE=$(date '+%Y-%m-%d %H-%M')
 
-source ./devices.sh
-
+SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
+source "$SCRIPT_DIR/devices.sh"
 commands='echo $HOSTNAME $(/usr/sbin/ifconfig eth0 | grep netmask | cut -d " " -f 10) $(/usr/sbin/ifconfig eth0 | grep ether | cut -d " " -f 10) $(nv sh platform | grep serial-number | cut -d " " -f 3) $(nv sh platform | grep product-name | cut -d " " -f 4) $(cat /etc/lsb-release  | grep RELEASE | cut -d "=" -f2) '
 
 echo "DEVICE-NAME ETH0-IP ETH0-MAC SERIAL MODEL VERSION" > ~/cable-check/assets.txt

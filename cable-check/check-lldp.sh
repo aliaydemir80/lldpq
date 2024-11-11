@@ -1,8 +1,8 @@
 #!/bin/bash
 DATE=$(date '+%Y-%m-%d--%H-%M')
 
-source ./devices.sh
-
+SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
+source "$SCRIPT_DIR/devices.sh"
 unreachable_hosts=()
 
 ping_test() {

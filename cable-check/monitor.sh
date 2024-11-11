@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source ./devices.sh
-
+SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
+source "$SCRIPT_DIR/devices.sh"
 execute_commands() {
     local device=$1
     local user=$2
