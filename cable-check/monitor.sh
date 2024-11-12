@@ -27,7 +27,18 @@ EOF
 
     echo "<h3 class='interface-info'>" >> monitor-results/${hostname}.html
     echo "<pre>" >> monitor-results/${hostname}.html
-    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show interface" >> monitor-results/${hostname}.html
+
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show interface | sed -E '1 s/^port/<span style=\"color:green;\">Interface<\/span>/; 1,2! s/^(\S+)/<span style=\"color:steelblue;\">\1<\/span>/;  s/ up /<span style=\"color:lime;\"> up <\/span>/g; s/ down /<span style=\"color:red;\"> down <\/span>/g'" >> monitor-results/${hostname}.html
+
+    echo "<h1></h1><h1><font color="#b57614">Port VLAN Mapping ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo bridge vlan | sed -E '1 s/^port/<span style=\"color:green;\">port<\/span>/; /^vxlan[0-9]+ / s/(vxlan[0-9]+)(\s+)([0-9]+)/\1\2<span style=\"color:red;\">\3<\/span>/; 1! s/^(\S+)/<span style=\"color:steelblue;\">\1<\/span>/; s/([0-9]+) PVID/<span style=\"color:red;\">\1<\/span> PVID/; s/^(\s+[0-9]+)/<span style=\"color:red;\">\1<\/span>/'" >> monitor-results/${hostname}.html
+
+    echo "<h1></h1><h1><font color="#b57614">ARP Table ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "ip neighbour | grep -E -v 'fe80' | sort -t '.' -k1,1n -k2,2n -k3,3n -k4,4n | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/<span style=\"color:tomato;\">\1<\/span>/; s/dev ([^ ]+)/dev <span style=\"color:steelblue;\">\1<\/span>/; s/lladdr ([0-9a-f:]+)/lladdr <span style=\"color:tomato;\">\1<\/span>/'" >> monitor-results/${hostname}.html
+
+    echo "<h1></h1><h1><font color="#b57614">MAC Table ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo bridge fdb | grep -E -v '00:00:00:00:00:00' | sort | sed -E 's/^([0-9a-f:]+)/<span style=\"color:tomato;\">\1<\/span>/; s/dev ([^ ]+)/dev <span style=\"color:steelblue;\">\1<\/span>/; s/vlan ([0-9]+)/vlan <span style=\"color:red;\">\1<\/span>/; s/dst ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/dst <span style=\"color:lime;\">\1<\/span>/'" >> monitor-results/${hostname}.html
+
     echo "</h3>" >> monitor-results/${hostname}.html
     echo "</pre>" >> monitor-results/${hostname}.html
     echo "</body></html>" >> monitor-results/${hostname}.html

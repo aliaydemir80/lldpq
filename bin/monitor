@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd ~/cable-check/
+/bin/bash ./monitor.sh >/dev/null 2>&1
+
+exit 0
