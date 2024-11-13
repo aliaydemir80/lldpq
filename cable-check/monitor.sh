@@ -39,6 +39,9 @@ EOF
     echo "<h1></h1><h1><font color="#b57614">MAC Table ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo bridge fdb | grep -E -v '00:00:00:00:00:00' | sort | sed -E 's/^([0-9a-f:]+)/<span style=\"color:tomato;\">\1<\/span>/; s/dev ([^ ]+)/dev <span style=\"color:steelblue;\">\1<\/span>/; s/vlan ([0-9]+)/vlan <span style=\"color:red;\">\1<\/span>/; s/dst ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/dst <span style=\"color:lime;\">\1<\/span>/'" >> monitor-results/${hostname}.html
 
+    echo "<h1></h1><h1><font color="#b57614">BGP STATUS ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo vtysh -c \"show bgp vrf all sum\" | sed -E 's/(VRF\s+)([a-zA-Z0-9_-]+)/\1<span style=\"color:tomato;\">\2<\/span>/g; s/Total number of neighbors ([0-9]+)/Total number of neighbors <span style=\"color:steelblue;\">\1<\/span>/g; s/(\S+)\s+(\S+)\s+Summary/<span style=\"color:lime;\">\1 \2<\/span> Summary/g; s/\b(Active|Idle)\b/<span style=\"color:red;\">\1<\/span>/g'" >> monitor-results/${hostname}.html
+
     echo "</h3>" >> monitor-results/${hostname}.html
     echo "</pre>" >> monitor-results/${hostname}.html
     echo "</body></html>" >> monitor-results/${hostname}.html
