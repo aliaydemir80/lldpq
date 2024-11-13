@@ -1,5 +1,5 @@
 #!/bin/bash
-
+DATE=$(date '+%Y-%m-%d %H-%M')
 SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 source "$SCRIPT_DIR/devices.sh"
 execute_commands() {
@@ -44,6 +44,7 @@ EOF
 
     echo "</h3>" >> monitor-results/${hostname}.html
     echo "</pre>" >> monitor-results/${hostname}.html
+    echo -e "<span style=\"color:tomato;\">Created on $DATE</span>" >> monitor-results/${hostname}.html
     echo "</body></html>" >> monitor-results/${hostname}.html
 }
 
