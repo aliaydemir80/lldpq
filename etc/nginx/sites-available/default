@@ -24,5 +24,9 @@ server {
             autoindex_exact_size off;
             autoindex_localtime on;
         }
-
+        location /monitor-results/ {
+            autoindex on;
+            autoindex_exact_size off;
+            autoindex_localtime on;
+        }
 }

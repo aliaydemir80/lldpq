@@ -37,56 +37,53 @@
     <h1></h1>
     <h1><font color="#b57614">Device Configs on the Fabric</font></h1>
     <h3></h3>
-    
-    <label for="txtFileDropdown"> </label>
-    <select id="txtFileDropdown" onchange="handleFileSelection('txt')">
-        <option value="">-- Select a TXT file --</option>
+    <label for="fileTypeDropdown">Select File Type:</label>
+    <select id="fileTypeDropdown" onchange="handleFileTypeSelection()">
+        <option value="">-- Select File Type --</option>
+        <option value="txt">TXT</option>
+        <option value="yaml">YAML</option>
     </select>
-
-    <label for="yamlFileDropdown"> </label>
-    <select id="yamlFileDropdown" onchange="handleFileSelection('yaml')">
-        <option value="">-- Select a YAML file --</option>
+    <label for="fileDropdown">Select File:</label>
+    <select id="fileDropdown" onchange="handleFileSelection()">
+        <option value="">-- Select a File --</option>
     </select>
-
     <br><br>
     <div id="metinAlani"></div>
-
     <script>
+        let files = [];
         function listFiles() {
             fetch('/configs/')
                 .then(response => response.text())
                 .then(data => {
                     const parser = new DOMParser();
                     const htmlDoc = parser.parseFromString(data, 'text/html');
-                    const files = Array.from(htmlDoc.querySelectorAll('a')).map(a => a.href);
-                    
-                    const txtFileDropdown = document.getElementById('txtFileDropdown');
-                    const yamlFileDropdown = document.getElementById('yamlFileDropdown');
-
-                    files.forEach(file => {
-                        const fileName = file.split('/').pop();
-                        const option = document.createElement('option');
-                        option.value = fileName;
-                        option.textContent = fileName;
-                        
-                        if (file.endsWith('.txt')) {
-                            txtFileDropdown.appendChild(option);
-                        } else if (file.endsWith('.yaml')) {
-                            yamlFileDropdown.appendChild(option);
-                        }
-                    });
+                    files = Array.from(htmlDoc.querySelectorAll('a')).map(a => a.href);
                 })
                 .catch(error => console.error('Error fetching file list:', error));
         }
-
-        function handleFileSelection(type) {
-            const fileDropdown = document.getElementById(type === 'txt' ? 'txtFileDropdown' : 'yamlFileDropdown');
+        function handleFileTypeSelection() {
+            const fileTypeDropdown = document.getElementById('fileTypeDropdown');
+            const selectedType = fileTypeDropdown.value;
+            const fileDropdown = document.getElementById('fileDropdown');
+            fileDropdown.innerHTML = '<option value="">-- Select a File --</option>';
+            if (selectedType) {
+                const filteredFiles = files.filter(file => file.endsWith('.' + selectedType));
+                filteredFiles.forEach(file => {
+                    const fileName = file.split('/').pop();
+                    const option = document.createElement('option');
+                    option.value = fileName;
+                    option.textContent = fileName;
+                    fileDropdown.appendChild(option);
+                });
+            }
+        }
+        function handleFileSelection() {
+            const fileDropdown = document.getElementById('fileDropdown');
             const selectedFile = fileDropdown.value;
             if (selectedFile) {
                 fetchFileContent(selectedFile);
             }
         }
-
         function fetchFileContent(fileName) {
             fetch(`/configs/${fileName}`)
                 .then(response => response.text())
@@ -98,7 +95,6 @@
                     element.innerText = 'Error fetching LLDP results: ' + error;
                 });
         }
-
         function displayLLDPResults(results) {
             const element = document.getElementById('metinAlani');
             element.innerHTML = '';
@@ -121,7 +117,6 @@
                 element.appendChild(document.createElement('br'));
             });
         }
-
         window.onload = listFiles;
     </script>
 </body>
