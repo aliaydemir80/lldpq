@@ -73,6 +73,8 @@ def check_connections(topology_file, device_neighbors):
                     active_neighbor_port = active_neighbor['port_id']
                 elif active_neighbor['sys_name'] == expected_neighbor_sys_name and active_neighbor['port_id'] == expected_neighbor_port:
                     status = 'Pass'
+                    active_neighbor_sys_name = active_neighbor['sys_name']
+                    active_neighbor_port = active_neighbor['port_id']
                 else:
                     status = 'Fail'
                     active_neighbor_sys_name = active_neighbor['sys_name']
