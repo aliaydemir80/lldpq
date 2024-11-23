@@ -57,6 +57,9 @@ sudo systemctl restart nginx
 ```
 echo "0 * * * * $(whoami) /usr/local/bin/lldpq" | sudo tee -a /etc/crontab
 ```
+```
+echo "*/15 * * * * $(whoami) /usr/local/bin/monitor" | sudo tee -a /etc/crontab
+```
 
 
  
