@@ -3,12 +3,13 @@
 
 
 '''
+
 NCurses ssh Connection Manager (nccm)
 =====================================
 
 ![](images/program_screenshot.png)
 
-Copyright (C) 2020-2022 Kenneth Aaron.
+Copyright (C) Kenneth Aaron.
 
 flyingrhino AT orcon DOT net DOT nz
 
@@ -33,8 +34,9 @@ PURPOSE.
 See the GNU General Public License for more details.
 
 
+
 About nccm
-----------
+==========
 
 * Simple yet powerful ncurses ssh connection manager.
 * No unnecessary features or bloatware - do one thing and
@@ -46,8 +48,9 @@ About nccm
     read the majority of the logs.
 
 
+
 Who is nccm for?
-----------------
+================
 
 * You have dozens or thousands of boxes to manage via ssh.
 * Too hard to remember server hostnames or IP addresses
@@ -66,8 +69,9 @@ Who is nccm for?
     nccm is for YOU!
 
 
+
 Manual install instructions
----------------------------
+===========================
 
 This is the easiest way to install nccm, you can of course
 install and use nccm in any way you wish.
@@ -160,8 +164,9 @@ information in a python exception is at the end of the
 output.
 
 
+
 nccm.yml settings
------------------
+=================
 
 This file is mostly used for ssh connection details, but
 also supports program settings described in this chapter.
@@ -172,14 +177,20 @@ see fit.
 
 These are global settings, affecting all sessions.
 
+
 `nccm_config_controlmode`:
+--------------------------
+
 Controls the cursor movement mode. Two modes are supported:
 - std:    Cursor keys move the marker as expected.
 - focus:  Marker and list move independently.
           The list is designed to move while the marker
           remains fixed unless it is moved manually.
 
+
 `nccm_config_loglevel`:
+-----------------------
+
 Controls log level of messages sent by nccm to syslog.
 If you are using systemd it usually captures syslog
 messages which you can read in `journalctl`. I will use
@@ -187,7 +198,10 @@ the word syslog in this documentation as referral to both.
 Use this for debugging. Default level is info.
 Supported levels: debug, info, warning, error, critical .
 
+
 `nccm_config_logprivateinfo`:
+-----------------------------
+
 Controls whether you want syslog/journal to include private
 information such as usernames & hostnames. By default this
 is set to `false` which results in the data being replaced
@@ -201,14 +215,39 @@ before the `nccm_config_logprivateinfo` setting is loaded.
 When this is enabled you will see:  `LogPrv` in red in the
 help line at the bottom of the screen.
 
+
 `nccm_config_keepalive`:
+------------------------
+
 Sends a message through the encrypted channel every
 n seconds (0 to disable) to prevent idle sessions from
 being disconnected.
 You can customize this on a per-connection basis by using
 the setting `keepalive: n` (optional).
 
-`nccm_config_identity`
+
+`nccm_default_ssh_port`:
+------------------------
+
+Works alongside the setting:  `nccm_force_default_ssh_port`
+and if:  `nccm_force_default_ssh_port == true`  , then the
+value of:  `nccm_default_ssh_port`  will be forced upon
+connections that don't have their own:  `port: SERVER_PORT`
+setting (which is always respected).
+If:  `nccm_force_default_ssh_port == false`  , then the
+value of:  `nccm_default_ssh_port`  will have no effect.
+
+
+`nccm_force_default_ssh_port`:
+------------------------------
+
+Works alongside:  `nccm_default_ssh_port` and explained
+above.
+
+
+`nccm_config_identity`:
+-----------------------
+
 For public key authentication, normally ssh will load your
 private key from the default locations. You can force ssh
 to use your own file by putting it's path here. Or set to
@@ -216,13 +255,19 @@ to use your own file by putting it's path here. Or set to
 You can customize this on a per-connection basis by using
 the setting `identity: path` (optional).
 
-`nccm_config_sshprogram`
+
+`nccm_config_sshprogram`:
+-------------------------
+
 By default nccm will use the ssh program as found in your
 path. If you want to explicitly set the path to ssh, or
 you want to use a different program - set it here.
 This is a global setting that affects all your connections.
 
-`nccm_config_promptuser`
+
+`nccm_config_promptuser`:
+-------------------------
+
 By default set to `false` and nccm will connect immediately
 to the selected server. Set this value to `true`
 if you want nccm to prompt the user to press Enter before
@@ -232,7 +277,10 @@ If using pre/post connection scripts (disabled by default)
 the prompt is shown before the preconnection script is run
 and once again after the post connection script is run.
 
-`nccm_config_importnccmd:`
+
+`nccm_config_importnccmd`:
+--------------------------
+
 This setting defines whether nccm should try to import any
 yml files it finds in /etc/nccm.d/ . Useful in a multiuser
 env where each user can have their own nccm.yml as well as
@@ -242,9 +290,11 @@ program settings.
 As files are imported - older data will be updated with
 newer data/values.
 Note - nccm.yml from one of the supported directories is
-loaded first, then /etc/nccm.d/*.yml are imported.
+loaded first, then `/etc/nccm.d/*.yml` are imported.
 
-`nccm_config_logpath`
+
+`nccm_config_logpath`:
+-----------------------
 If you want nccm to save a copy of ssh terminal output
 using `tee` - set this to the logfile path.
 By default this is set to:  `false`  meaning no logging.
@@ -255,12 +305,17 @@ or audit, etc) and it's better to know that logging is not
 working now rather than doing your work and later finding
 out that you don't have a log file.
 The log filename format is:
-{DATE}_{TIME}_{USER}_AT_{SERVER}_{SCREENWIDTH}x{SCREENHEIGHT}.nccm.log .
+`{DATE}_{TIME}_{USER}_AT_{SERVER}_{SCREENWIDTH}x{SCREENHEIGHT}.xxxxxx.nccm.log` .
 Note - the screen dimensions are those when nccm started
 the connection - they might have changed later on during
 your session.
+The:  `xxxxxx`  are random chars to ensure a unique log
+filename (could be needed if nccm is deployed on a jump
+host with multiple people using it).
 When tee logging is enabled you will see:  `LogTee`  in
 red in the help line at the bottom of the screen.
+If permitted by:  `nccm_config_logprivateinfo` - the log
+file will also include operator info and hostname.
 Note - EVERYTHING displayed on the screen is logged (unless
 the terminal hides stuff like password entry - because it
 is not echoed to the screen). This includes text you edit
@@ -275,24 +330,10 @@ github page: [https://github.com/flyingrhinonz/catstep](https://github.com/flyin
 You can also use the regular Linux `cat` program but the
 output will fly by really fast.
 
-`nccm_loop_nccm`
-Run nccm in a loop - when you exit out of your ssh session
-nccm menu will reappear. You are allowed to resize your
-window outside nccm and the new window size will apply when
-nccm menu reappears after you exit from your ssh session.
 
-`nccm_config_preconnect_script`
-Path to an executable that nccm will run prior to making a
-connection. Useful if you want to do anything immediately
-before making a connection.
-Supported values: false (default) or any valid path to
-an executable script/program.
+`nccm_config_prompt_on_unknown_user`:
+-------------------------------------
 
-`nccm_config_postconnect_script`
-Same as above but run after the connection exits.
-Useful for stuff like tidyups, etc.
-
-`nccm_config_prompt_on_unknown_user`
 If there is no user specified for a connection, instead of
 inferring the user from the currently logged in user,
 provide a prompt right before connecting to ask for the
@@ -303,7 +344,58 @@ the server list.
 By default set to false and takes the username from the
 currently logged in user.
 
-`nccm_keybindings`
+
+`nccm_loop_nccm`:
+-----------------
+
+Run nccm in a loop - when you exit out of your ssh session
+nccm menu will reappear. You are allowed to resize your
+window outside nccm and the new window size will apply when
+nccm menu reappears after you exit from your ssh session.
+
+
+`nccm_config_preconnect_script`:
+--------------------------------
+
+Path to an executable that nccm will run prior to making a
+connection. Useful if you want to do anything immediately
+before making a connection.
+It passes the connection string (eg:  `user@host`) as `$1`
+arg to the script.
+Supported values: false (default) or any valid path to
+an executable script/program.
+
+Example using this to copy:  `kenmode.sh`  to the managed
+box - set this value similar to:
+`nccm_config_preconnect_script: /usr/local/bin/nccm_copy_kenmode.sh`
+and then create the target script similar to:
+
+```
+#!/bin/bash
+
+scp /usr/local/lib/kenmode.sh $1:/tmp/
+ssh $1 chmod 664 /tmp/kenmode.sh
+
+#rsync --perms --chmod=u+rw,g+rw,o+r /usr/local/lib/kenmode.sh $1:/tmp/
+    # ^ Works better than the two-command scp/ssh above, but fails when
+    #       rsync not found on the target machine.
+    #   Therefore the first option is more reliable.
+```
+
+Once connected to the target box you can activate kenmode
+by sourcing it:  `. /tmp/kenmode.sh`
+
+
+`nccm_config_postconnect_script`:
+---------------------------------
+
+Same as above but run after the connection exits.
+Useful for stuff like tidyups, etc.
+
+
+`nccm_keybindings`:
+-------------------
+
 nccm is configured for US keyboard mapping as entered into
 a standard linux xterm. If you have something else and
 certain keys don't behave as you'd expect - change their
@@ -325,8 +417,9 @@ instead of F1 you want to use F12 - just put the code for
 F12 in the F1 key position.
 
 
+
 Controls
---------
+========
 
 In nccm_config_controlmode == std mode:
 
@@ -356,10 +449,13 @@ In both modes:
 - F1-F5 or !@#$% :    Sort by respective column (1-5)
 
 
+
 Usage
------
+=====
 
 `Conn` textbox:
+---------------
+
 Accepts integer values only (and:  `!@#$%`  for sorting).
 Pressing Enter here will connect to this connection ID,
 as corresponding to a valid value in the full
@@ -370,7 +466,10 @@ line) - even if they don't match.
 If this textbox is empty, it will connect to the
 connection marked by the highlighted line.
 
+
 `Filter` textbox:
+-----------------
+
 Type any filter text here.
 Filtering occurs by searching text present in all visible
 columns (does not search in any of the non-visble
@@ -396,8 +495,9 @@ A count of filtered lines will appear as:  `Hits=n`  in the
 help line at the bottom of the screen.
 
 
+
 Command line arguments
-----------------------
+======================
 
 * Supply initial filtering text. These are considered part
     of the Filter field and are AND'ed. Examples:
@@ -426,8 +526,9 @@ Command line arguments
     Display nccm version.
 
 
+
 Sorting
--------
+=======
 
 `F1-F5` keys sort by the respective fields 1-5.
 The display shows 4 visible columms but we treat
@@ -453,16 +554,18 @@ Column #  Column name       Sort    Alternate sort
 ```
 
 
+
 Help text
----------
+=========
 
 From within nccm: use `Ctrl-h` to display the help text.
 From the command line: use `nccm -h` or `nccm --help`.
 There isn't a man page yet so `man nccm` won't work.
 
 
+
 Limitations
------------
+===========
 
 Will not store passwords. Please don't request this
 feature because it won't be added.
@@ -491,10 +594,12 @@ which in turn are dictated by the width of your window.
 This should be enough for most use cases though.
 
 
+
 Troubleshooting
----------------
+===============
 
 Starting nccm:
+--------------
 
 The most common problem for existing installations is
 user errors in the nccm.yml file.
@@ -522,7 +627,9 @@ download both nccm and nccm.yml, verify that nccm now
 works properly, then update the newly downloaded nccm.yml
 from your backup copy.
 
+
 Logging:
+--------
 
 Look at your syslog file for nccm entries. Depending upon
 the verbosity level set in the config file you may not see
@@ -601,8 +708,9 @@ If you encounter and fix any issues - please post your
 problem and solution for all to benefit from.
 
 
+
 Hacking nccm
-------------
+============
 
 Take something good and make it better!
 The code is heavily commented, with the hope that it will
@@ -614,8 +722,9 @@ writing a script to convert and append fields to nccm.yml
 is easy.
 
 
+
 Misc
-----
+====
 
 This program aims to do one thing well - lets you make SSH
 connections from an ncurses based manager with minimum
@@ -623,8 +732,9 @@ distraction. Feature requests that keep nccm on focus will
 be considered.
 
 
+
 Credits
--------
+=======
 
 Big thanks to everyone who reported bugs, submitted feature
 requests and improvements that made nccm what it is today.
@@ -644,7 +754,9 @@ import operator
 import os
 import pathlib
 import pydoc
+import random
 import shlex
+import socket
 import string
 import subprocess
 import sys
@@ -708,8 +820,8 @@ SecureLogging = True
 
 
 # Program identification strings:
-__version__     = '1.6.28'
-VersionDate     = '2022-07-23'
+__version__     = '1.7.6'
+VersionDate     = '2024-04-28'
 ProgramName     = 'NCurses ssh Connection Manager'
 AuthorName      = 'Kenneth Aaron'
 AuthorEmail     = 'flyingrhino AT orcon DOT net DOT nz'
@@ -939,9 +1051,6 @@ class GlobalConfig:
         # ^ Prompt user to press Enter before connecting
     LoopNccm = False
         # ^ Run nccm in a loop after exiting from ssh?
-    DefaultSshPort = '22'
-        # Default port used for ssh. At present this is not configurable
-        #   in nccm.yml .
     FilterTextArg = ''
         # ^ Filter text supplied at the command line
     AutoConnect = True
@@ -1221,6 +1330,21 @@ class Connections:
                 # ^ Controls the keep alive message frequency
         LogWrite.debug('Loaded {} config item:  self.DefaultKeepAlive == {}'
             .format(GlobalConfig.ConfigFile, self.DefaultKeepAlive))
+
+        # Handle loading of the default port value from nccm_default_ssh_port:
+        self.DefaultSshPort = int(self.LoadedServersDict.pop(
+            'nccm_default_ssh_port', '22'))
+                # ^ Forces the default port if none is supplied in the per-connection
+                #       setting, and if the ForceDefaultSshPort  directive allows it.
+        LogWrite.debug('Loaded {} config item:  self.DefaultSshPort == {}'
+            .format(GlobalConfig.ConfigFile, self.DefaultSshPort))
+
+        # Handle loading of the ForceDefaultSshPort value from nccm_force_default_ssh_port.
+        #   Works together with the setting:  DefaultSshPort :
+        self.ForceDefaultSshPort = self.LoadedServersDict.pop(
+            'nccm_force_default_ssh_port', True)
+        LogWrite.debug('Loaded {} config item:  self.ForceDefaultSshPort == {}'
+            .format(GlobalConfig.ConfigFile, self.ForceDefaultSshPort))
 
         # Handle loading of the default identity value from nccm_config_identity:
         self.Identity = self.LoadedServersDict.pop(
@@ -1523,12 +1647,13 @@ class Connections:
                     'unsafe':   'FSL.Port == {}'.format(FSL.Port),
                     'safe':     'FSL.Port == {}'.format('CENSORED') } )
 
-                if not FSL.Port:
-                    FSL.Port = GlobalConfig.DefaultSshPort
-                        # ^ No port supplied, fallback to using default port per var
+                if not FSL.Port and self.ForceDefaultSshPort:
+                    FSL.Port = self.DefaultSshPort
+                        # ^ No port supplied, fallback to using default port per var.
+                        #   Only do this if the:  nccm.yaml  var:  nccm_force_default_ssh_port == true .
                     LogWrite.debug( {
                         'unsafe':   'No specific port supplied, forcing default port {}'
-                            .format(GlobalConfig.DefaultSshPort),
+                            .format(self.DefaultSshPort),
                         'safe':     'CENSORED, not logging port info' } )
 
                 FSL.UserAddr = '{}@{}'.format(FSL.UserName, FSL.Address) # for convenience
@@ -1669,7 +1794,6 @@ class Connections:
         CommandLine += (self.SshProgram, )
 
         if '<user>@' in SelectedEntry.UserAddr:
-            RestoreTerminal(self.stdscr)
             PromptedUser = PromptForUserLogin("Enter username to use for <username>@server : ")
             #CommandLine += ('{}@{}'.format(PromptedUser, SelectedEntry.Address), )
             CommandLine += (SelectedEntry.UserAddr.replace('<user>', PromptedUser), )
@@ -1677,6 +1801,7 @@ class Connections:
             CommandLine += (SelectedEntry.UserAddr, )
 
         if SelectedEntry.Port:
+            # ^ This works regardless of the value of:  nccm.yaml  -->  nccm_force_default_ssh_port
             CommandLine += ('-p', '{}'.format(SelectedEntry.Port))
 
         if SelectedEntry.KeepAlive:
@@ -1690,11 +1815,12 @@ class Connections:
             CommandLine += SelectedEntry.CustomArgs
 
         if self.LogPath:    # Log file path is set:
-            self.LogFileName = pathlib.PurePath(self.LogPath).joinpath('{}_{}_{}x{}{}'
+            self.LogFileName = pathlib.PurePath(self.LogPath).joinpath('{}_{}_{}x{}.{}{}'
                 .format(datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'),
                     SelectedEntry.UserAddr.replace('@', '_AT_').replace('<user>', PromptedUser),
                     GlobalConfig.ScreenWidth,
                     GlobalConfig.ScreenHeight,
+                    ''.join(random.choice(string.ascii_lowercase) for i in range(6)),
                     '.nccm.log'))
 
             LogWrite.debug( {
@@ -1732,12 +1858,32 @@ class Connections:
             the log file properly.
         '''
 
+        LogWrite.debug('class: Connections, method: WriteLogFileHeader started')
+
+        if SecureLogging:
+            RunningUsername = 'CENSORED'
+            RunningUID = 'CENSORED'
+            RunningHostname = 'CENSORED'
+        else:
+            RunningUsername = getpass.getuser()
+            RunningUID = os.getuid()
+            RunningHostname = socket.getfqdn()
+
         IntroText = ( '\n##### Info #####\n\n'
             'This log file was created by nccm:\n'
+            '  {} v{} , {}\n'
+            '  by: {} ( {} )\n'
             '  https://github.com/flyingrhinonz/nccm\n\n'
-            'and can be viewed with catstep:\n'
+            'This log file is best viewed using catstep:\n'
             '  https://github.com/flyingrhinonz/catstep\n\n'
-            '##### Your log follows #####\n' )
+            'Operator identifiers (details of person using nccm):\n'
+            '  Name:    {}\n'
+            '  UID:     {}\n'
+            '  From:    {}\n'
+            '  At:      {}\n\n'
+            '##### Your connection log follows #####\n'
+                .format(ProgramName, __version__, VersionDate, AuthorName, AuthorEmail, RunningUsername,
+                    RunningUID, RunningHostname, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')))
 
         LogFile = pathlib.Path(self.LogFileName)
         LogFile.write_text(IntroText)
@@ -1754,7 +1900,6 @@ class Connections:
                 .format(NewScreenHeight, NewScreenWidth))
 
         if NewScreenHeight != GlobalConfig.ScreenHeight or NewScreenWidth != GlobalConfig.ScreenWidth:
-            RestoreTerminal(self.stdscr)
             LogWrite.warning( { 'tee': '\nnccm: Resizing the window during menu display is not supported.\nYou may resize the window during or after connection initiation.\nIf nccm returns after you disconnect - it will use the new window size.\n' } )
             sys.exit(1)
 
@@ -1994,7 +2139,6 @@ def LogGlobalConfig():
             'GlobalConfig.PromptToContinue == {}\n'
             'GlobalConfig.PromptOnUnknownUser == {}\n'
             'GlobalConfig.LoopNccm == {}\n'
-            'GlobalConfig.DefaultSshPort == {}\n'
             'GlobalConfig.FilterTextArg == {}\n'
             'GlobalConfig.AutoConnect == {}\n'
             'GlobalConfig.ForceDebugLogging == {}\n'
@@ -2012,7 +2156,6 @@ def LogGlobalConfig():
                     GlobalConfig.PromptToContinue,
                     GlobalConfig.PromptOnUnknownUser,
                     GlobalConfig.LoopNccm,
-                    GlobalConfig.DefaultSshPort,
                     GlobalConfig.FilterTextArg,
                     GlobalConfig.AutoConnect,
                     GlobalConfig.ForceDebugLogging,
@@ -2030,7 +2173,6 @@ def LogGlobalConfig():
             'GlobalConfig.PromptToContinue == {}\n'
             'GlobalConfig.PromptOnUnknownUser == {}\n'
             'GlobalConfig.LoopNccm == {}\n'
-            'GlobalConfig.DefaultSshPort == {}\n'
             'GlobalConfig.FilterTextArg == {}\n'
             'GlobalConfig.AutoConnect == {}\n'
             'GlobalConfig.ForceDebugLogging == {}\n'
@@ -2109,16 +2251,6 @@ def PromptForUserLogin(PromptText):
     return Ans.rstrip()
 
 
-def RestoreTerminal(stdscr):
-    ''' Restore the terminal to a sane status '''
-
-    curses.curs_set(1)          # Restore blinking cursor
-    curses.echo()               # Restore terminal echo
-    stdscr.keypad(False)        # Return special keys to normal
-    curses.noraw()              # Return raw mode to normal
-    curses.endwin()             # End curses session
-
-
 def UpdateDisplay():
     ''' The window objects were added to GlobalConfig.DisplayObjects list,
         so here we need to use the Display method of those objects. '''
@@ -2175,7 +2307,6 @@ def SetupCurses(stdscr):
         # ^ Used for setting alerts such as 'LogTee'
 
     if not curses.has_colors(): # Color not supported
-        RestoreTerminal(stdscr)
         LogWrite.warning( { 'tee': '\nnccm: This program requires color support\n' } )
         return False
 
@@ -2184,13 +2315,11 @@ def SetupCurses(stdscr):
         .format(GlobalConfig.ScreenHeight, GlobalConfig.ScreenWidth))
 
     if GlobalConfig.ScreenWidth < 60 or GlobalConfig.ScreenHeight < 15:
-        RestoreTerminal(stdscr)
         LogWrite.warning( { 'tee': '\nnccm: Window must be at least 60x15. GlobalConfig.ScreenHeight == {} , GlobalConfig.ScreenWidth == {}\n'
             .format(GlobalConfig.ScreenHeight, GlobalConfig.ScreenWidth) } )
         return False
 
     if len(GlobalConfig.FilterTextArg) > GlobalConfig.ScreenWidth-32:
-        RestoreTerminal(stdscr)
         LogWrite.warning( { 'tee': '\nnccm: Filter text too long ({} chars). For your window size enter no more than {} chars\n'
             .format(len(GlobalConfig.FilterTextArg), GlobalConfig.ScreenWidth-32) } )
         return False
@@ -2338,8 +2467,6 @@ def MainCursesFunction(stdscr):
         LogWrite.debug('Clearing:  GlobalConfig.FilterTextArg')
         CommandInfo = ConnectionsList.GetCommandLine(
             ConnectionsList.SelectedEntryVal)
-        #RestoreTerminal(stdscr)
-            # ^ Moved into:  GetCommandLine  due to prompt admin for username.
         return CommandInfo
 
     LogWrite.debug('Active window is now: ActiveWindow == {}  (the user input textbox that is active right now)'
@@ -2607,7 +2734,6 @@ def MainCursesFunction(stdscr):
         UpdateDisplay()
         ActiveWindow.ActivateWindow()
 
-    RestoreTerminal(stdscr)
     return CommandInfo
 
 
@@ -2863,5 +2989,4 @@ if __name__ == '__main__':
 
     LogWrite.info('{} exiting. Program run time: {:.3f} seconds'
         .format(ProgramName, time.time() - ScriptStartTime))
-
 
