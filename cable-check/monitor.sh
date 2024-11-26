@@ -31,7 +31,7 @@ EOF
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show interface | sed -E '1 s/^port/<span style=\"color:green;\">Interface<\/span>/; 1,2! s/^(\S+)/<span style=\"color:steelblue;\">\1<\/span>/;  s/ up /<span style=\"color:lime;\"> up <\/span>/g; s/ down /<span style=\"color:red;\"> down <\/span>/g'" >> monitor-results/${hostname}.html
 
     echo "<h1></h1><h1><font color="#b57614">Port VLAN Mapping ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
-    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show bridge port-vlan | cut -c12- | sed -E '1 s/^port/<span style=\"color:green;\">port<\/span>/; 2! s/^(\s{0,3})([a-zA-Z_]\S*)/\1<span style=\"color:steelblue;\">\2<\/span>/; s/\btagged\b/<span style=\"color:tomato;\">tagged<\/span>/g'" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show bridge port-vlan | cut -c11- | sed -E '1 s/^    port/<span style=\"color:green;\">    port<\/span>/; 2! s/^(\s{0,4})([a-zA-Z_]\S*)/\1<span style=\"color:steelblue;\">\2<\/span>/; s/\btagged\b/<span style=\"color:tomato;\">tagged<\/span>/g'" >> monitor-results/${hostname}.html
 
     echo "<h1></h1><h1><font color="#b57614">ARP Table ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "ip neighbour | grep -E -v 'fe80' | sort -t '.' -k1,1n -k2,2n -k3,3n -k4,4n | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/<span style=\"color:tomato;\">\1<\/span>/; s/dev ([^ ]+)/dev <span style=\"color:steelblue;\">\1<\/span>/; s/lladdr ([0-9a-f:]+)/lladdr <span style=\"color:tomato;\">\1<\/span>/'" >> monitor-results/${hostname}.html
