@@ -30,6 +30,10 @@ def parse_lldp_results(directory, device_info):
     link_id = 0
 
     for device_name, info in device_info.items():
+
+        if "OOB-MGMT" in device_name:
+            continue
+
         if "border" in device_name.lower():
             layer_sort_preference = 1
         elif "superspine" in device_name.lower():
