@@ -60,12 +60,13 @@ echo "0 * * * * $(whoami) /usr/local/bin/lldpq" | sudo tee -a /etc/crontab
 ```
 echo "*/15 * * * * $(whoami) /usr/local/bin/monitor" | sudo tee -a /etc/crontab
 ```
-
-
+```
+echo "0 */12 * * * $(whoami) /usr/local/bin/get-conf" | sudo tee -a /etc/crontab
+```
  
 # run the LLDPq 🚀️
 
-Before running ```lldpq``` or ```zzh```, ```ssh-copy-id``` must be done on all devices.
+Before running ```lldpq``` or ```zzh```, ```ssh-copy-id``` must be done on all devices. 
 And run ```sudo``` without password.
 
 ```
@@ -74,6 +75,10 @@ lldpq
 
 ```
 get-conf
+```
+
+```
+monitor
 ```
 
 ```
