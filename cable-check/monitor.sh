@@ -36,8 +36,12 @@ EOF
 
     echo "<h3 class='interface-info'>" >> monitor-results/${hostname}.html
     echo "<pre>" >> monitor-results/${hostname}.html
+    echo -e "<span style=\"color:tomato;\">Created on $DATE</span>\n" >> monitor-results/${hostname}.html
 
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show interface | sed -E '1 s/^port/<span style=\"color:green;\">Interface<\/span>/; 1,2! s/^(\S+)/<span style=\"color:steelblue;\">\1<\/span>/;  s/ up /<span style=\"color:lime;\"> up <\/span>/g; s/ down /<span style=\"color:red;\"> down <\/span>/g'" >> monitor-results/${hostname}.html
+
+    echo "<h1></h1><h1><font color="#b57614">Port Status ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show interface status | sed -E '1 s/^port/<span style=\"color:green;\">Interface<\/span>/; 1,2! s/^(\S+)/<span style=\"color:steelblue;\">\1<\/span>/;  s/ up /<span style=\"color:lime;\"> up <\/span>/g; s/ down /<span style=\"color:red;\"> down <\/span>/g'" >> monitor-results/${hostname}.html
 
     echo "<h1></h1><h1><font color="#b57614">Port VLAN Mapping ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "nv show bridge port-vlan | cut -c11- | sed -E '1 s/^    port/<span style=\"color:green;\">    port<\/span>/; 2! s/^(\s{0,4})([a-zA-Z_]\S*)/\1<span style=\"color:steelblue;\">\2<\/span>/; s/\btagged\b/<span style=\"color:tomato;\">tagged<\/span>/g'" >> monitor-results/${hostname}.html
@@ -48,8 +52,11 @@ EOF
     echo "<h1></h1><h1><font color="#b57614">MAC Table ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo bridge fdb | grep -E -v '00:00:00:00:00:00' | sort | sed -E 's/^([0-9a-f:]+)/<span style=\"color:tomato;\">\1<\/span>/; s/dev ([^ ]+)/dev <span style=\"color:steelblue;\">\1<\/span>/; s/vlan ([0-9]+)/vlan <span style=\"color:red;\">\1<\/span>/; s/dst ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/dst <span style=\"color:lime;\">\1<\/span>/'" >> monitor-results/${hostname}.html
 
-    echo "<h1></h1><h1><font color="#b57614">BGP STATUS ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    echo "<h1></h1><h1><font color="#b57614">BGP Status ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo vtysh -c \"show bgp vrf all sum\" | sed -E 's/(VRF\s+)([a-zA-Z0-9_-]+)/\1<span style=\"color:tomato;\">\2<\/span>/g; s/Total number of neighbors ([0-9]+)/Total number of neighbors <span style=\"color:steelblue;\">\1<\/span>/g; s/(\S+)\s+(\S+)\s+Summary/<span style=\"color:lime;\">\1 \2<\/span> Summary/g; s/\b(Active|Idle)\b/<span style=\"color:red;\">\1<\/span>/g'" >> monitor-results/${hostname}.html
+
+    echo "<h1></h1><h1><font color="#b57614">Port LAYER-1 Status ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo l1-show all | sed -E 's/^Port: +([^ ]+)/\n=========================================================================================\n\nPort:  <span style=\"color:steelblue;\">\1<\/span>\n/g; s/Troubleshooting Info: (.+)/<span style=\"color:tomato;\">Troubleshooting Info:<\/span><span style=\"color:lime;\"> \1<\/span>/g'" >> monitor-results/${hostname}.html
 
     echo "</h3>" >> monitor-results/${hostname}.html
     echo "</pre>" >> monitor-results/${hostname}.html
@@ -81,5 +88,5 @@ else
 fi
 wait
 sudo cp -r monitor-results/ /var/www/html/
+sudo chmod 644 /var/www/html/monitor-results/*
 exit 0
-

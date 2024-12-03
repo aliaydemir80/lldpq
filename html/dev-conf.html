@@ -37,62 +37,91 @@
     <h1></h1>
     <h1><font color="#b57614">Device Configs on the Fabric</font></h1>
     <h3></h3>
-    <label for="fileTypeDropdown">Select File Type:</label>
-    <select id="fileTypeDropdown" onchange="handleFileTypeSelection()">
-        <option value="">-- Select File Type --</option>
-        <option value="txt">TXT</option>
-        <option value="yaml">YAML</option>
+    <label for="deviceDropdown">Select Device:</label>
+    <select id="deviceDropdown" onchange="handleDeviceSelection()">
+        <option value="">-- Select a Device --</option>
     </select>
-    <label for="fileDropdown">Select File:</label>
-    <select id="fileDropdown" onchange="handleFileSelection()">
-        <option value="">-- Select a File --</option>
+    <label for="fileTypeDropdown">Select File Type:</label>
+    <select id="fileTypeDropdown" onchange="handleFileTypeSelection()" disabled>
+        <option value="">-- Select File Type --</option>
+        <option value="txt">NV-SET</option>
+        <option value="yaml">YAML</option>
     </select>
     <br><br>
     <div id="metinAlani"></div>
     <script>
         let files = [];
+        let devices = [];
         function listFiles() {
             fetch('/configs/')
                 .then(response => response.text())
                 .then(data => {
                     const parser = new DOMParser();
                     const htmlDoc = parser.parseFromString(data, 'text/html');
-                    files = Array.from(htmlDoc.querySelectorAll('a')).map(a => a.href);
+                    files = Array.from(htmlDoc.querySelectorAll('a'))
+                        .map(a => a.getAttribute('href'))
+                        .filter(file => file !== '../');
+                    extractDevices();
                 })
                 .catch(error => console.error('Error fetching file list:', error));
         }
+        function extractDevices() {
+            const deviceSet = new Set();
+            files.forEach(file => {
+                const fileName = file.split('/').pop();
+                const deviceName = fileName.split('.')[0];
+                deviceSet.add(deviceName);
+            });
+            devices = Array.from(deviceSet);
+            populateDeviceDropdown();
+        }
+        function populateDeviceDropdown() {
+            const deviceDropdown = document.getElementById('deviceDropdown');
+            devices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device;
+                option.textContent = device;
+                deviceDropdown.appendChild(option);
+            });
+        }
+        function handleDeviceSelection() {
+            const deviceDropdown = document.getElementById('deviceDropdown');
+            const selectedDevice = deviceDropdown.value;
+            const fileTypeDropdown = document.getElementById('fileTypeDropdown');
+            fileTypeDropdown.value = '';
+            fileTypeDropdown.disabled = !selectedDevice;
+            clearDisplay();
+        }
         function handleFileTypeSelection() {
+            const deviceDropdown = document.getElementById('deviceDropdown');
+            const selectedDevice = deviceDropdown.value;
             const fileTypeDropdown = document.getElementById('fileTypeDropdown');
             const selectedType = fileTypeDropdown.value;
-            const fileDropdown = document.getElementById('fileDropdown');
-            fileDropdown.innerHTML = '<option value="">-- Select a File --</option>';
+
             if (selectedType) {
-                const filteredFiles = files.filter(file => file.endsWith('.' + selectedType));
-                filteredFiles.forEach(file => {
-                    const fileName = file.split('/').pop();
-                    const option = document.createElement('option');
-                    option.value = fileName;
-                    option.textContent = fileName;
-                    fileDropdown.appendChild(option);
-                });
-            }
-        }
-        function handleFileSelection() {
-            const fileDropdown = document.getElementById('fileDropdown');
-            const selectedFile = fileDropdown.value;
-            if (selectedFile) {
-                fetchFileContent(selectedFile);
+                const fileName = `${selectedDevice}.${selectedType}`;
+                if (files.includes(fileName)) {
+                    fetchFileContent(fileName);
+                } else {
+                    displayError(`File ${fileName} not found.`);
+                }
+            } else {
+                clearDisplay();
             }
         }
         function fetchFileContent(fileName) {
             fetch(`/configs/${fileName}`)
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
                 .then(data => {
                     displayLLDPResults(data);
                 })
                 .catch(error => {
-                    const element = document.getElementById('metinAlani');
-                    element.innerText = 'Error fetching LLDP results: ' + error;
+                    displayError('Error fetching file content: ' + error);
                 });
         }
         function displayLLDPResults(results) {
@@ -116,6 +145,15 @@
                 element.appendChild(span);
                 element.appendChild(document.createElement('br'));
             });
+        }
+        function displayError(message) {
+            const element = document.getElementById('metinAlani');
+            element.innerHTML = `<span class="red">${message}</span>`;
+        }
+
+        function clearDisplay() {
+            const element = document.getElementById('metinAlani');
+            element.innerHTML = '';
         }
         window.onload = listFiles;
     </script>
