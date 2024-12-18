@@ -20,7 +20,7 @@ execute_commands() {
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <link rel="shortcut icon" href="/png/favicon.ico">
-    <title>..::nvidia::..</title>
+    <title>..::${hostname}::..</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="/css/styles2.css">
     <style>.interface-info {color: green;margin-top: 20px;}</style>
@@ -58,6 +58,9 @@ EOF
     echo "<h1></h1><h1><font color="#b57614">Port LAYER-1 Status ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo l1-show all | sed -E 's/^Port: +([^ ]+)/\n=========================================================================================\n\nPort:  <span style=\"color:steelblue;\">\1<\/span>\n/g; s/Troubleshooting Info: (.+)/<span style=\"color:tomato;\">Troubleshooting Info:<\/span><span style=\"color:lime;\"> \1<\/span>/g'" >> monitor-results/${hostname}.html
 
+    echo "<h1></h1><h1><font color="#b57614">Port LAYER-1 BER Status ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo l1-show all -p | sed -E 's/^Port: +([^ ]+)/\n=========================================================================================\n\nPort:  <span style=\"color:steelblue;\">\1<\/span>\n/g" >> monitor-results/${hostname}.html
+
     echo "</h3>" >> monitor-results/${hostname}.html
     echo "</pre>" >> monitor-results/${hostname}.html
     echo -e "<span style=\"color:tomato;\">Created on $DATE</span>" >> monitor-results/${hostname}.html
@@ -90,3 +93,4 @@ wait
 sudo cp -r monitor-results/ /var/www/html/
 sudo chmod 644 /var/www/html/monitor-results/*
 exit 0
+
