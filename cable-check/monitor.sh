@@ -93,4 +93,3 @@ wait
 sudo cp -r monitor-results/ /var/www/html/
 sudo chmod 644 /var/www/html/monitor-results/*
 exit 0
-
