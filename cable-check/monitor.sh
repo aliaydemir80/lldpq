@@ -59,7 +59,7 @@ EOF
     ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo l1-show all | sed -E 's/^Port: +([^ ]+)/\n=========================================================================================\n\nPort:  <span style=\"color:steelblue;\">\1<\/span>\n/g; s/Troubleshooting Info: (.+)/<span style=\"color:tomato;\">Troubleshooting Info:<\/span><span style=\"color:lime;\"> \1<\/span>/g'" >> monitor-results/${hostname}.html
 
     echo "<h1></h1><h1><font color="#b57614">Port LAYER-1 BER Status ${hostname}</font></h1><h3></h3>" >> monitor-results/${hostname}.html
-    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo l1-show all -p | sed -E 's/^Port: +([^ ]+)/\n=========================================================================================\n\nPort:  <span style=\"color:steelblue;\">\1<\/span>\n/g" >> monitor-results/${hostname}.html
+    ssh -o StrictHostKeyChecking=no -T -q "$user@$device" "sudo l1-show all -p | sed -E 's/^Port: +([^ ]+)/\n=========================================================================================\n\nPort:  <span style=\"color:steelblue;\">\1<\/span>\n/g; s/effective_ber_coef      : (.+)/<span style=\"color:tomato;\">effective_ber_coef      :<\/span><span style=\"color:lime;\"> \1<\/span>/g'" >> monitor-results/${hostname}.html
 
     echo "</h3>" >> monitor-results/${hostname}.html
     echo "</pre>" >> monitor-results/${hostname}.html
