@@ -74,6 +74,8 @@
                 link.href = `monitor-results/${deviceName}.html`;
                 link.textContent = deviceName;
                 link.className = colorClass;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
 
                 span.appendChild(link);
                 span.appendChild(document.createTextNode(line.substring(deviceName.length)));
