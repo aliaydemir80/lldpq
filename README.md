@@ -4,7 +4,7 @@
 
 ## [00] git clone  
 
-git clone https://github.com/aliaydemir80/lldpq.git
+``` git clone https://github.com/aliaydemir80/lldpq.git ```
 
 cd lldpq
 
