@@ -50,11 +50,7 @@ for device in "${!devices[@]}"; do
 done
 
 wait
-
 echo ""
-echo -e "\e[1;34mAll commands have been executed...\e[0m"
-echo ""
-
 if [ -s "$unreachable_hosts_file" ]; then
     echo -e "\e[0;36mUnreachable hosts:\e[0m"
     echo ""
