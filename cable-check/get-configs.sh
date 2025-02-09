@@ -2,18 +2,18 @@
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 source "$SCRIPT_DIR/devices.sh"
-unreachable_hosts=()
 date=$(date +%F--%H-%M)
 mkdir -p ~/configs/configs-${date}/nv-yaml
 mkdir -p ~/configs/configs-${date}/nv-set
 sudo mkdir -p /var/www/html/configs
+unreachable_hosts_file=$(mktemp)
 
 ping_test() {
     local device=$1
     local hostname=$2
-    ping -c 1 -W 1 "$device" > /dev/null 2>&1
+    ping -c 1 -W 0.5 "$device" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
-        unreachable_hosts+=("$device $hostname")
+        echo "$device $hostname" >> "$unreachable_hosts_file"
         return 1
     fi
     return 0
@@ -34,14 +34,19 @@ execute_commands() {
     fi
 }
 
-for device in "${!devices[@]}"; do
-    IFS=' ' read -r user hostname <<< "${devices[$device]}"
+process_device() {
+    local device=$1
+    local user=$2
+    local hostname=$3
     ping_test "$device" "$hostname"
     if [ $? -eq 0 ]; then
-        execute_commands "$device" "$user" "$hostname" &
-    else
-        echo -e "\e[0;31m${hostname} (${device}) is unreachable\e[0m"
+        execute_commands "$device" "$user" "$hostname"
     fi
+}
+
+for device in "${!devices[@]}"; do
+    IFS=' ' read -r user hostname <<< "${devices[$device]}"
+    process_device "$device" "$user" "$hostname" &
 done
 
 wait
@@ -49,21 +54,22 @@ wait
 echo ""
 echo -e "\e[1;34mAll commands have been executed...\e[0m"
 echo ""
-if [ ${#unreachable_hosts[@]} -ne 0 ]; then
+
+if [ -s "$unreachable_hosts_file" ]; then
     echo -e "\e[0;36mUnreachable hosts:\e[0m"
     echo ""
-    for host in "${unreachable_hosts[@]}"; do
+    while IFS= read -r host; do
         IFS=' ' read -r ip hostname <<< "$host"
         printf "\e[31m[%-14s]\t\e[0;31m[%-1s]\e[0m\n" "$ip" "$hostname"
-        #echo -e "\e[0;31m[${ip}]\t\e[1;31m[${hostname}]\e[0m"
-    done
+    done < "$unreachable_hosts_file"
     echo ""
 else
     echo -e "\e[0;32mAll hosts are reachable.\e[0m"
     echo ""
 fi
+
 sudo rm -rf /var/www/html/configs/*
 sudo cp ~/configs/configs-${date}/nv-set/* /var/www/html/configs/
 sudo cp ~/configs/configs-${date}/nv-yaml/* /var/www/html/configs/
+rm -f "$unreachable_hosts_file"
 exit 0
-
