@@ -67,5 +67,27 @@ fi
 sudo rm -rf /var/www/html/configs/*
 sudo cp ~/configs/configs-${date}/nv-set/* /var/www/html/configs/
 sudo cp ~/configs/configs-${date}/nv-yaml/* /var/www/html/configs/
+
+for dir in ~/[^.]*; do
+    if [[ -d "$dir" && \
+          -d "$dir/inventory" && \
+          -d "$dir/playbooks" && \
+          -d "$dir/roles" && \
+          -d "$dir/assets" ]]; then
+        PROJECT_DIR="$dir"
+        break
+    fi
+done
+
+if [[ -n "$PROJECT_DIR" ]]; then
+    echo "Project Folder is: $PROJECT_DIR"
+    rm -rf ${PROJECT_DIR}/configs/*
+    cp -r ~/configs/configs-${date} ${PROJECT_DIR}/configs/
+else
+    echo "Project Folder Not Found" >&2
+    exit 1
+fi
+
 rm -f "$unreachable_hosts_file"
+
 exit 0
