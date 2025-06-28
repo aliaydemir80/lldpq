@@ -81,8 +81,12 @@ done
 
 if [[ -n "$PROJECT_DIR" ]]; then
     echo "Project Folder is: $PROJECT_DIR"
-    rm -rf ${PROJECT_DIR}/configs/*
-    cp -r ~/configs/configs-${date} ${PROJECT_DIR}/configs/
+    rm -rf ${PROJECT_DIR}/configs
+    mkdir ${PROJECT_DIR}/configs
+    mkdir ${PROJECT_DIR}/configs/nv-set/
+    mkdir ${PROJECT_DIR}/configs/nv-yaml/
+    cp ~/configs/configs-${date}/nv-set/*  ${PROJECT_DIR}/configs/nv-set/
+    cp ~/configs/configs-${date}/nv-yaml/* ${PROJECT_DIR}/configs/nv-yaml/
 else
     echo "Project Folder Not Found" >&2
     exit 1
