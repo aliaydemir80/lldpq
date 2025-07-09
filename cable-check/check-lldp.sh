@@ -54,6 +54,7 @@ fi
 
 /usr/bin/python3 ./lldp-validate.py
 grep -v Pass lldp-results/lldp_results.ini > lldp-results/raw-problems-lldp_results.ini
+
 awk 'NF' RS='\n\n' lldp-results/raw-problems-lldp_results.ini | awk '/No-Info/ || /Fail/' RS= | sed '/^================================/i\\' > lldp-results/problems-lldp_results.ini
 if [ ! -s lldp-results/problems-lldp_results.ini ]; then
     head -n 1 lldp-results/raw-problems-lldp_results.ini >> lldp-results/problems-lldp_results.ini
@@ -63,6 +64,17 @@ if ! grep -q "Created on" lldp-results/problems-lldp_results.ini; then
     header=$(head -n 1 lldp-results/raw-problems-lldp_results.ini)
     echo "$header" | cat - lldp-results/problems-lldp_results.ini > temp && mv temp lldp-results/problems-lldp_results.ini
 fi
+
+awk 'BEGIN{RS="\n\n"; ORS="\n\n"} /No-Info/' lldp-results/problems-lldp_results.ini | grep -v Fail > lldp-results/down-lldp_results.ini
+if [ ! -s lldp-results/down-lldp_results.ini ]; then
+    head -n 1 lldp-results/raw-problems-lldp_results.ini >> lldp-results/down-lldp_results.ini
+    echo -e "\nGood news, there are no DOWN ports..." >> lldp-results/down-lldp_results.ini
+fi
+if ! grep -q "Created on" lldp-results/down-lldp_results.ini; then
+    header=$(head -n 1 lldp-results/raw-problems-lldp_results.ini)
+    echo "$header" | cat - lldp-results/down-lldp_results.ini > temp && mv temp lldp-results/down-lldp_results.ini
+fi
+
 sudo cp lldp-results/lldp_results.ini /var/www/html/
 sudo mv /var/www/html/problems-lldp_results.ini /var/www/html/hstr/Problems-${DATE}.ini
 sudo cp lldp-results/problems-lldp_results.ini /var/www/html/
