@@ -490,6 +490,20 @@ if command -v mountpoint >/dev/null 2>&1 && mountpoint -q "$CONFIG_DIR" 2>/dev/n
     echo "✓ Persistent application configuration directory active: $CONFIG_DIR"
 fi
 
+# A mounted config directory keeps notifications.yaml across image upgrades, so
+# a default introduced or changed in a newer image would never reach it. Run
+# after the symlink is in place: the helper writes through the link and only
+# moves keys the operator has never touched.
+if [ -x /usr/local/libexec/lldpq-config-provenance.py ] && \
+   [ -f /usr/local/libexec/lldpq-notifications-shipped.yaml ] && \
+   [ -f /home/lldpq/lldpq/notifications.yaml ]; then
+    python3 /usr/local/libexec/lldpq-config-provenance.py merge \
+        --target /home/lldpq/lldpq/notifications.yaml \
+        --shipped /usr/local/libexec/lldpq-notifications-shipped.yaml \
+        --lock /etc/lldpq.conf.lock || true
+    echo "✓ Notification defaults reconciled"
+fi
+
 # Normalize the baked-in, legacy-bind, and single-config-volume layouts alike.
 # chown/chmod follow the managed symlink when CONFIG_DIR is mounted.
 chown lldpq:www-data /var/www/html/display-aliases.json 2>/dev/null || true

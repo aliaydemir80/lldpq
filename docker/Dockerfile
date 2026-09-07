@@ -122,23 +122,35 @@ RUN chown -R lldpq:lldpq /home/lldpq/ \
 # Install the backup/import engine outside the service-user-writable app tree.
 # This COPY deliberately occurs after the recursive /home ownership change.
 RUN install -d -o root -g root -m 0755 /usr/local/libexec \
-    && rm -f /home/lldpq/lldpq/backup_import.py /home/lldpq/lldpq/auth_users.py
+    && rm -f /home/lldpq/lldpq/backup_import.py /home/lldpq/lldpq/auth_users.py \
+        /home/lldpq/lldpq/config_provenance.py
 COPY --chown=root:root lldpq/backup_import.py /usr/local/libexec/lldpq-backup-import.py
 COPY --chown=root:root lldpq/auth_users.py /usr/local/libexec/lldpq-auth-users.py
 COPY --chown=root:root install.sh /usr/local/libexec/lldpq-install-library.sh
 COPY --chown=root:root html/setup_safety.py /usr/local/libexec/lldpq-setup-safety.py
+COPY --chown=root:root lldpq/config_provenance.py /usr/local/libexec/lldpq-config-provenance.py
+# Pristine copy of the shipped defaults. The app-tree notifications.yaml becomes
+# a symlink into the mounted config directory at startup, which leaves no
+# reference to compare an upgraded image's defaults against.
+COPY --chown=root:root lldpq/notifications.yaml /usr/local/libexec/lldpq-notifications-shipped.yaml
 RUN chmod 0755 /usr/local/libexec/lldpq-backup-import.py \
         /usr/local/libexec/lldpq-auth-users.py \
         /usr/local/libexec/lldpq-install-library.sh \
         /usr/local/libexec/lldpq-setup-safety.py \
+        /usr/local/libexec/lldpq-config-provenance.py \
+    && chmod 0644 /usr/local/libexec/lldpq-notifications-shipped.yaml \
     && test ! -L /usr/local/libexec/lldpq-backup-import.py \
     && test ! -L /usr/local/libexec/lldpq-auth-users.py \
     && test ! -L /usr/local/libexec/lldpq-install-library.sh \
     && test ! -L /usr/local/libexec/lldpq-setup-safety.py \
+    && test ! -L /usr/local/libexec/lldpq-config-provenance.py \
+    && test ! -L /usr/local/libexec/lldpq-notifications-shipped.yaml \
     && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-backup-import.py)" = "0:0:755" \
     && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-auth-users.py)" = "0:0:755" \
     && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-install-library.sh)" = "0:0:755" \
-    && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-setup-safety.py)" = "0:0:755"
+    && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-setup-safety.py)" = "0:0:755" \
+    && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-config-provenance.py)" = "0:0:755" \
+    && test "$(stat -c '%u:%g:%a' /usr/local/libexec/lldpq-notifications-shipped.yaml)" = "0:0:644"
 
 # Setup topology files: real files in web root, symlinks in lldpq dir
 # Same pattern as native install - web UI edits files in /var/www/html/

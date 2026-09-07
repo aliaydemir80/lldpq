@@ -6069,6 +6069,37 @@ if [[ "$INSTALL_MODE" == "update" ]]; then
 fi
 
 # ============================================================================
+# COMMON: Reconcile shipped notifications.yaml defaults
+# ============================================================================
+# The update path restores the live notifications.yaml over the freshly shipped
+# one, which keeps the Slack webhook and tuned thresholds but also means a
+# default introduced or changed since a host's first install never reaches it.
+# config_provenance records what LLDPq last shipped for each managed key and
+# only moves keys the operator has never touched; the notifications/Slack
+# section is excluded outright. Runs after the ruamel check above because a
+# rewrite without it would strip every comment in the file.
+step "Reconciling notification defaults..."
+_provenance_helper="$LLDPQ_SRC_DIR/lldpq/config_provenance.py"
+_shipped_notifications="$LLDPQ_SRC_DIR/lldpq/notifications.yaml"
+if [[ -f "$_provenance_helper" ]] && [[ -f "$_shipped_notifications" ]]; then
+    if [[ "$INSTALL_MODE" == "update" ]]; then
+        _provenance_action=merge
+    else
+        # A fresh install already has the shipped file; recording the baseline
+        # now gives the next update an exact base to compare against.
+        _provenance_action=seed
+    fi
+    # Never fatal: leaving a new default for the next update is preferable to
+    # failing an install over a config nicety.
+    sudo python3 "$_provenance_helper" "$_provenance_action" \
+        --target "$LLDPQ_INSTALL_DIR/notifications.yaml" \
+        --shipped "$_shipped_notifications" \
+        --lock /etc/lldpq.conf.lock || true
+else
+    echo "  Skipped (no provenance helper in this source tree)"
+fi
+
+# ============================================================================
 # COMMON: Retained import recovery (boot + SIGKILL path trigger)
 # ============================================================================
 step "Configuring retained-import recovery..."
