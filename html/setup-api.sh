@@ -2342,7 +2342,7 @@ if action == 'get-notifications':
             'optical': net.get('optical_power_margin', 3),
             'cpu': hw.get('cpu_temp_critical', 85),
             'asic': hw.get('asic_temp_critical', 105),
-            'disk': sysd.get('disk_usage_critical', 90),
+            'disk': sysd.get('disk_usage_critical', 95),
         },
     }
     print(json.dumps({'success': True, 'exists': exists, 'notifications': out,

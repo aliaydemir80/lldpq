@@ -79,8 +79,10 @@ thresholds:
     
   # System monitoring  
   system:
-    disk_usage_warning: 80    # % - Disk usage warning
-    disk_usage_critical: 90   # % - Disk usage critical
+    # Read by the web UI disk warning bar regardless of notifications.enabled:
+    # warning shows a persistent amber bar, critical adds a re-arming popup.
+    disk_usage_warning: 85    # % - Disk usage warning
+    disk_usage_critical: 95   # % - Disk usage critical
     # CPU load uses hardware.load_per_core_* above. Legacy absolute
     # load_average_* values are not mixed with the normalized metric.
     uptime_minimum_hours: 1   # Hours - Alert if device rebooted recently

@@ -61,7 +61,66 @@
             margin-left: 58px;
             width: calc(100% - 58px);
         }
-        
+
+        /* Disk warning bar — the shell outlives every iframe navigation, so a
+           filling disk stays on screen until it is actually dealt with. One
+           custom property drives both the bar height and the iframe offset. */
+        body { --disk-bar-h: 44px; }
+        body.disk-warn-collapsed { --disk-bar-h: 26px; }
+
+        #disk-warning-bar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            height: var(--disk-bar-h);
+            box-sizing: border-box;
+            align-items: center;
+            gap: 12px;
+            padding: 0 14px;
+            color: #fff;
+            font-size: 13px;
+            background: linear-gradient(0deg, #b45309 0%, #d97706 100%);
+            border-bottom: 1px solid rgba(0,0,0,0.35);
+            /* Below the sidebar so the mobile off-canvas menu still covers it. */
+            z-index: 95;
+            /* Only left is animated, matching the sidebar's own width transition.
+               Height must change in the same frame as the iframe offset below it,
+               which is not animated, or the bar briefly overlaps the content. */
+            transition: left 0.3s ease;
+        }
+
+        body.disk-warn-visible #disk-warning-bar { display: flex; }
+        #sidebar.collapsed ~ #disk-warning-bar { left: 58px; }
+        #disk-warning-bar.critical { background: linear-gradient(0deg, #991b1b 0%, #dc2626 100%); }
+
+        body.disk-warn-visible #content-iframe {
+            margin-top: var(--disk-bar-h);
+            height: calc(100vh - var(--disk-bar-h));
+        }
+
+        #disk-warning-bar .disk-warn-icon { flex: 0 0 auto; width: 18px; height: 18px; fill: currentColor; }
+        #disk-warning-bar .disk-warn-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #disk-warning-bar .disk-warn-short { display: none; flex: 1 1 auto; font-size: 11px; font-weight: 600; }
+        body.disk-warn-collapsed #disk-warning-bar .disk-warn-icon,
+        body.disk-warn-collapsed #disk-warning-bar .disk-warn-text,
+        body.disk-warn-collapsed #disk-warning-bar #disk-warning-action { display: none; }
+        body.disk-warn-collapsed #disk-warning-bar .disk-warn-short { display: block; }
+
+        #disk-warning-bar button {
+            flex: 0 0 auto;
+            border: 1px solid rgba(255,255,255,0.45);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.22);
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+        #disk-warning-bar button:hover { background: rgba(0,0,0,0.38); }
+        #disk-warning-bar .disk-warn-collapse { padding: 2px 8px; font-size: 14px; line-height: 1.2; }
+
         /* Toggle Button */
         .sidebar-toggle {
             position: absolute;
@@ -573,6 +632,12 @@
                 width: 100%;
             }
 
+            /* The sidebar is off-canvas here, so the bar spans the full width. */
+            #disk-warning-bar,
+            #sidebar.collapsed ~ #disk-warning-bar {
+                left: 0;
+            }
+
             .mobile-menu-btn {
                 display: flex;
                 align-items: center;
@@ -825,6 +890,14 @@
     </button>
     <div id="mobile-overlay" onclick="toggleMobileSidebar()"></div>
 
+    <div id="disk-warning-bar" role="status" aria-live="polite">
+        <svg class="disk-warn-icon" viewBox="0 0 24 24"><path d="M13,14H11V9H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/></svg>
+        <span class="disk-warn-text" id="disk-warning-text"></span>
+        <span class="disk-warn-short" id="disk-warning-short"></span>
+        <button type="button" id="disk-warning-action" onclick="openDiskMaintenance()">Free up space</button>
+        <button type="button" class="disk-warn-collapse" id="disk-warning-collapse" onclick="toggleDiskWarningBar()" title="Collapse">&minus;</button>
+    </div>
+
     <iframe id="content-iframe" name="content-iframe" src="start.html"></iframe>
     
     <script>
@@ -1059,6 +1132,10 @@
             // Check for updates after auth is ready (admin only)
             checkForUpdates();
 
+            // Both roles see a filling disk; the endpoint needs the session, so
+            // this can only start once auth is confirmed.
+            startDiskMonitor();
+
             // The selection is per browser tab. It filters supported reports;
             // the Fabric dashboard remains the full-fabric source of truth.
             applyTrackingView(storedTrackingView(), false);
@@ -1260,6 +1337,165 @@
             document.body.appendChild(ta); ta.select();
             try { document.execCommand('copy'); if (cb) cb(); } catch (e) {}
             ta.remove();
+        }
+
+        // ── Host disk headroom ──────────────────────────────────────────
+        // Thresholds come from the server (notifications.yaml), so the bar and
+        // Setup step 7 can never disagree about what counts as critical.
+        const DISK_STATUS_URL = '/disk-status.sh';
+        const DISK_POLL_INTERVAL = 5 * 60 * 1000;
+        // How long the critical popup stays away once shown. The bar keeps
+        // warning the whole time; only the interruption is rate-limited.
+        const DISK_SNOOZE_MS = 60 * 60 * 1000;
+        const DISK_SNOOZE_UNTIL_KEY = 'lldpq_disk_snooze_until';
+        const DISK_SNOOZE_LEVEL_KEY = 'lldpq_disk_snooze_level';
+        const DISK_BAR_COLLAPSED_KEY = 'lldpq_disk_bar_collapsed';
+        let diskPollTimer = null;
+
+        // auth.js declares LLDPqAuth with a top-level const, which lands in the
+        // global lexical scope and never on window, so it has to be reached by
+        // bare identifier.
+        function diskIsAdmin() {
+            return typeof LLDPqAuth !== 'undefined'
+                && typeof LLDPqAuth.isAdmin === 'function'
+                && LLDPqAuth.isAdmin();
+        }
+
+        function diskEscape(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function diskFormatSize(mb) {
+            if (typeof mb !== 'number' || !isFinite(mb) || mb < 0) return 'unknown';
+            if (mb >= 1048576) return (mb / 1048576).toFixed(1) + ' TB';
+            if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB';
+            return Math.round(mb) + ' MB';
+        }
+
+        function diskStored(key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        }
+
+        function diskRemember(key, value) {
+            try { localStorage.setItem(key, value); } catch (e) {}
+        }
+
+        function diskForgetSnooze() {
+            try {
+                localStorage.removeItem(DISK_SNOOZE_UNTIL_KEY);
+                localStorage.removeItem(DISK_SNOOZE_LEVEL_KEY);
+            } catch (e) {}
+        }
+
+        function toggleDiskWarningBar() {
+            const collapsed = document.body.classList.toggle('disk-warn-collapsed');
+            const button = document.getElementById('disk-warning-collapse');
+            if (button) {
+                button.innerHTML = collapsed ? '&plus;' : '&minus;';
+                button.title = collapsed ? 'Expand' : 'Collapse';
+            }
+            diskRemember(DISK_BAR_COLLAPSED_KEY, collapsed ? 'true' : 'false');
+        }
+
+        function openDiskMaintenance() {
+            const frame = document.getElementById('content-iframe');
+            if (frame) frame.src = 'setup.html?step=maintenance';
+        }
+
+        function diskRenderBar(data) {
+            const bar = document.getElementById('disk-warning-bar');
+            if (!bar) return;
+            const level = data.level;
+            if (level !== 'warning' && level !== 'critical') {
+                // Recovered, or the probe cannot answer: drop the bar and forget
+                // the snooze so the next real shortage interrupts immediately.
+                document.body.classList.remove('disk-warn-visible');
+                diskForgetSnooze();
+                return;
+            }
+            const mounts = Array.isArray(data.mounts) ? data.mounts : [];
+            const worst = mounts[0] || {};
+            const percent = data.worst_percent;
+            const warnAt = (data.thresholds && data.thresholds.warning) || 0;
+            const affected = mounts.filter(function (mount) { return mount.percent >= warnAt; }).length;
+
+            let text = (level === 'critical' ? 'Disk almost full' : 'Disk filling up')
+                + ' \u2014 ' + percent + '% used on ' + (worst.mount || 'unknown mount')
+                + ' (' + diskFormatSize(worst.avail_mb) + ' free).';
+            if (affected > 1) {
+                text += ' ' + (affected - 1) + ' other filesystem'
+                    + (affected === 2 ? '' : 's') + ' also above ' + warnAt + '%.';
+            }
+            if (level === 'critical') {
+                text += ' Report publishing stops once the disk is full.';
+            }
+            document.getElementById('disk-warning-text').textContent = text;
+            document.getElementById('disk-warning-short').textContent = 'Disk ' + percent + '%';
+            bar.classList.toggle('critical', level === 'critical');
+
+            // Only an admin can reach Setup, so an operator gets the warning
+            // without a button that would just deny them.
+            const action = document.getElementById('disk-warning-action');
+            if (action) action.style.display = diskIsAdmin() ? '' : 'none';
+            document.body.classList.add('disk-warn-visible');
+            if (level === 'warning') diskRemember(DISK_SNOOZE_LEVEL_KEY, 'warning');
+        }
+
+        function diskMaybePopup(data) {
+            if (data.level !== 'critical') return;
+            // The shared dialogs load asynchronously; skipping without stamping
+            // the snooze means the next poll still gets to interrupt.
+            if (typeof window.lldpqConfirm !== 'function' || typeof window.lldpqInfo !== 'function') return;
+            // Escalating into critical interrupts even inside a snooze window,
+            // matching how check_alerts.py treats a severity increase.
+            const escalated = diskStored(DISK_SNOOZE_LEVEL_KEY) !== 'critical';
+            if (!escalated && Date.now() < (Number(diskStored(DISK_SNOOZE_UNTIL_KEY)) || 0)) return;
+            // Stamped on display rather than on dismissal, so closing with Esc
+            // or the X cannot turn this into a five-minute loop.
+            diskRemember(DISK_SNOOZE_UNTIL_KEY, String(Date.now() + DISK_SNOOZE_MS));
+            diskRemember(DISK_SNOOZE_LEVEL_KEY, 'critical');
+
+            const worst = (Array.isArray(data.mounts) && data.mounts[0]) || {};
+            const isAdmin = diskIsAdmin();
+            let message = '<strong>' + data.worst_percent + '% used</strong> on <code>'
+                + diskEscape(worst.mount || 'unknown mount') + '</code> \u2014 only '
+                + diskFormatSize(worst.avail_mb) + ' free.<br><br>'
+                + 'When the disk fills, the collection cycle stops publishing and marks the '
+                + 'reports stale instead of updating them.<br><br>';
+            message += isAdmin
+                ? 'Setup \u2192 Maintenance shows what is consuming space and can remove old update backups.'
+                : 'Ask an administrator to free space from Setup \u2192 Maintenance.';
+
+            if (isAdmin) {
+                lldpqConfirm('Disk almost full', message, openDiskMaintenance,
+                    { confirmText: 'Open Maintenance', cancelText: 'Remind me later' });
+            } else {
+                lldpqInfo('Disk almost full', message);
+            }
+        }
+
+        async function diskCheck() {
+            try {
+                const response = await fetch(DISK_STATUS_URL, { cache: 'no-store' });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!data || data.success !== true) return;
+                diskRenderBar(data);
+                diskMaybePopup(data);
+            } catch (e) {
+                // A failed poll leaves any warning already on screen in place.
+            }
+        }
+
+        function startDiskMonitor() {
+            if (diskStored(DISK_BAR_COLLAPSED_KEY) === 'true') {
+                document.body.classList.add('disk-warn-collapsed');
+                const button = document.getElementById('disk-warning-collapse');
+                if (button) { button.innerHTML = '&plus;'; button.title = 'Expand'; }
+            }
+            diskCheck();
+            if (!diskPollTimer) diskPollTimer = setInterval(diskCheck, DISK_POLL_INTERVAL);
         }
     </script>
 

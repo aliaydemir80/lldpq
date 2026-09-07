@@ -400,6 +400,18 @@ server {
             fastcgi_param HTTP_COOKIE $http_cookie;
         }
 
+        # Authenticated read-only host disk headroom (shell disk warning bar).
+        # Polled on a timer by every open session, so it stays df-only.
+        location = /disk-status.sh {
+            fastcgi_pass unix:/var/run/fcgiwrap.socket;
+            fastcgi_param SCRIPT_FILENAME /var/www/html/disk-status.sh;
+            fastcgi_param QUERY_STRING $query_string;
+            fastcgi_param REQUEST_METHOD $request_method;
+            fastcgi_param CONTENT_TYPE $content_type;
+            fastcgi_param CONTENT_LENGTH $content_length;
+            fastcgi_param HTTP_COOKIE $http_cookie;
+        }
+
         # ── Public machine-readable exports ─────────────────────────────
         # DELIBERATELY UNAUTHENTICATED (external automation: curl | jq).
         # The monitor-domain exports are static files written inside the
