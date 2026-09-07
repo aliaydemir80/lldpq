@@ -1352,9 +1352,8 @@
         const DISK_BAR_COLLAPSED_KEY = 'lldpq_disk_bar_collapsed';
         let diskPollTimer = null;
 
-        // auth.js declares LLDPqAuth with a top-level const, which lands in the
-        // global lexical scope and never on window, so it has to be reached by
-        // bare identifier.
+        // Guarded because the shell renders before auth.js has a session, and an
+        // unauthenticated visitor must not be treated as an admin.
         function diskIsAdmin() {
             return typeof LLDPqAuth !== 'undefined'
                 && typeof LLDPqAuth.isAdmin === 'function'

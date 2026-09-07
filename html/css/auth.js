@@ -872,6 +872,12 @@ const LLDPqAuth = {
     }
 };
 
+// A top-level const lives in the global lexical scope and never becomes a
+// window property, so every `if (window.LLDPqAuth)` guard in the pages silently
+// evaluated to false -- including the admin-only gates on Console, Ask-AI and
+// Commands. Publish it explicitly so that idiom means what it reads as.
+window.LLDPqAuth = LLDPqAuth;
+
 // Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.user-menu')) {
